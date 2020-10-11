@@ -1,7 +1,9 @@
 import * as express from "express";
 
-export class ManagedServer {
+export class RootManagedServer {
 	app: express.Application;
+
+	modules: [];
 
 	constructor() {
 		this.app = express();
