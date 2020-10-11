@@ -7,7 +7,11 @@ function compile(path) {
 
 	const transformer = <T extends ts.Node>(context: ts.TransformationContext) => (rootNode: T) => {
 		function visit(node: ts.Node): ts.Node {
-			console.log("Visiting " + ts.SyntaxKind[node.kind], node);
+			console.log("Visiting " + ts.SyntaxKind[node.kind]);
+
+			if (node.kind == ts.SyntaxKind.ClassDeclaration) {
+				console.log(node);
+			}
 
 			return ts.visitEachChild(node, visit, context);
 		}
