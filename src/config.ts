@@ -16,8 +16,8 @@ const userConfig = JSON.parse(fs.readFileSync(`${rootFolder}/vlconfig.json`).toS
 export const config = {
 	root: rootFolder,
 	services: {
-		outFile: (userConfig.context && userConfig.services.outFile) || "services.ts",
-		routingFile: (userConfig.context && userConfig.services.routingFile) || "routing.ts",
-		scan: (userConfig.context && userConfig.services.scan) || ["."]
+		outFile: (userConfig.services && userConfig.services.outFile) || "services.ts",
+		routingFile: (userConfig.services && userConfig.services.routingFile) || "routing.ts",
+		scan: (userConfig.services && userConfig.services.scan) || ["."]
 	}
 };
