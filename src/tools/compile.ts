@@ -12,8 +12,13 @@ function compile(path) {
 			if (node.kind == ts.SyntaxKind.ClassDeclaration) {
 				console.log(node);
 
-				if (node.heritageClauses[0] && node.heritageClauses[0].types[0]) {
-					console.log(node.heritageClauses[0].types[0].expression.escapedText);
+				const name = node.name.escapedText;
+
+				// check for Service inheritage
+				if (node.heritageClauses[0] && node.heritageClauses[0].types[0] && node.heritageClauses[0].types[0].expression.escapedText == "Service") {
+					for (let member of node.members) {
+						console.log(member);
+					}
 				}
 			}
 
