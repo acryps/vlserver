@@ -13,7 +13,7 @@ function compile(path) {
 				console.log(node);
 
 				if (node.heritageClauses[0] && node.heritageClauses[0].types[0]) {
-					console.log(node.heritageClauses[0].types[0]);
+					console.log(node.heritageClauses[0].types[0].expression.escapedText);
 				}
 			}
 
