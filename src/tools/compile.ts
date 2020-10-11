@@ -6,11 +6,15 @@ function compile(path) {
 	console.log(`COMPILE ${path}`);
 
 	const transformer = <T extends ts.Node>(context: ts.TransformationContext) => (rootNode: T) => {
-		function visit(node: ts.Node): ts.Node {
+		function visit(node): ts.Node {
 			console.log("Visiting " + ts.SyntaxKind[node.kind]);
 
 			if (node.kind == ts.SyntaxKind.ClassDeclaration) {
 				console.log(node);
+
+				if (node.heritageClauses[0] && node.heritageClauses[0].types[0]) {
+					console.log(node.heritageClauses[0].types[0].name.escapedText);
+				}
 			}
 
 			return ts.visitEachChild(node, visit, context);
