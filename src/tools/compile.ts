@@ -5,9 +5,22 @@ import * as fs from "fs";
 function compile(path) {
 	console.log(`COMPILE ${path}`);
 
-	const source = ts.createSourceFile(path, fs.readFileSync(path).toString(), ts.ScriptTarget.ESNext, true, ts.ScriptKind.TS);
+	const transformer = <T extends ts.Node>(context: ts.TransformationContext) => (rootNode: T) => {
+		function visit(node: ts.Node): ts.Node {
+			console.log("Visiting " + ts.SyntaxKind[node.kind]);
 
-	console.log(source);
+			return ts.visitEachChild(node, visit, context);
+		}
+
+		return ts.visitNode(rootNode, visit);
+	};
+
+	ts.transform(
+		ts.createSourceFile(path, fs.readFileSync(path).toString(), ts.ScriptTarget.ESNext, true, ts.ScriptKind.TS),
+		[
+			transformer
+		]
+	);
 }
 
 function scan(directory: string) {
