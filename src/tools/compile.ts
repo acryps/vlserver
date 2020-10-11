@@ -4,6 +4,10 @@ import * as fs from "fs";
 
 function compile(path) {
 	console.log(`COMPILE ${path}`);
+
+	const source = ts.createSourceFile(path, fs.readFileSync(path).toString(), ts.ScriptTarget.ESNext, true, ts.ScriptKind.TS);
+
+	console.log(source);
 }
 
 function scan(directory: string) {
