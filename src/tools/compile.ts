@@ -23,7 +23,7 @@ function scan(directory: string) {
 }
 
 export function compileServices() {
-	for (let scan of config.services.scan) {
-		scan();
+	for (let dir of config.services.scan) {
+		scan(dir);
 	}
 }
