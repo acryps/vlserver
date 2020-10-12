@@ -1,7 +1,10 @@
 import * as express from "express";
+import { ViewModel } from ".";
 
 export class RootManagedServer {
 	app: express.Application;
+
+	prepareRoutes() {}
 
 	modules: [];
 
@@ -15,5 +18,9 @@ export class RootManagedServer {
 		})
 
 		this.app.listen(port);
+	}
+
+	expose<TController>(id: string, controller: TController, handler: (controller: TController) => ViewModel<any>) {
+		
 	}
 }
