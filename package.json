@@ -5,7 +5,6 @@
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
 	"scripts": {
-		"preinstall": "mkdir -p node_modules; touch ./node_modules/.metadata_never_index",
 		"install": "tsc"
 	},
 	"bin": {
