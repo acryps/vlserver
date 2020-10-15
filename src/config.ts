@@ -17,7 +17,7 @@ export const config = {
 	root: rootFolder,
 	services: {
 		outFile: (userConfig.services && userConfig.services.outFile) || "services.ts",
-		routingFile: (userConfig.services && userConfig.services.routingFile) || "routing.ts",
+		serverFile: (userConfig.services && userConfig.services.serverOut) || "server.ts",
 		scan: (userConfig.services && userConfig.services.scan) || ["."]
 	}
 };
