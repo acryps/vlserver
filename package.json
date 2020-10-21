@@ -1,11 +1,12 @@
 {
 	"name": "vlserver",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "VLServer Managed Server",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
 	"scripts": {
-		"install": "tsc"
+		"install": "tsc",
+		"postinstall": "npx vlquery compile"
 	},
 	"bin": {
 		"vlserver": "bin/vlserver.js"
@@ -17,7 +18,8 @@
 		"@types/node": "^14.6.2",
 		"express": "^4.17.1",
 		"js-sha512": "^0.8.0",
-		"typescript": "^4.0.3"
+		"typescript": "^4.0.3",
+		"vlquery": "^2.2.3"
 	},
 	"repository": {
 		"type": "git",

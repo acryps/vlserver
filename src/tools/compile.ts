@@ -8,8 +8,6 @@ let routes = [];
 const viewModels = [];
 
 function compile(path: string, root: string, program: ts.Program, typeChecker: ts.TypeChecker) {
-	console.log(`COMPILE ${path}`);
-
 	const sourceFile = program.getSourceFile(path);
 
 	const imports = [];
@@ -39,8 +37,6 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 				if (node.kind == ts.SyntaxKind.ClassDeclaration) {
 					const name = node.name.escapedText;
 		
-					console.group(name);
-
 					imports.push({
 						file: `./${pathtools.relative(
 							pathtools.dirname(pathtools.resolve(config.root, config.services.serverFile)),
@@ -60,8 +56,6 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 						for (let member of node.members) {
 							if (member.kind == ts.SyntaxKind.Constructor) {
 								for (let param of member.parameters) {
-									console.log(`Inject '${param.type.typeName.escapedText}' as '${param.name.escapedText}' to '${name}'`);
-
 									controller.injects.push({
 										name: param.type.typeName.escapedText
 									});
@@ -74,8 +68,6 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 
 								if (type.resolvedTypeArguments) {
 									while (type && type.resolvedTypeArguments && type.resolvedTypeArguments[0]) {
-										console.log(type.intrinsicName);
-
 										types.push(type);
 
 										type = type.resolvedTypeArguments[0];
@@ -108,10 +100,7 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 					}
 
 					if (node.heritageClauses[0] && node.heritageClauses[0].types[0] && node.heritageClauses[0].types[0].expression.escapedText == "ViewModel") {
-						console.log("VIEWMODEL\n", node.getText(sourceFile));
-
 						const modelProperties = typeChecker.getTypeAtLocation(node.heritageClauses[0].types[0].typeArguments[0]).getProperties();
-
 						const baseViewModelProperties = typeChecker.getTypeAtLocation(node.heritageClauses[0].types[0]).getProperties();
 
 						const viewModelProperties = typeChecker.getTypeAtLocation(node).getProperties()
@@ -120,25 +109,50 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 						const properties = {};
 
 						for (let property of modelProperties) {
-							if (viewModelProperties.find(p => p.escapedName == property.escapedName)) {
-								properties[property.escapedName.toString()] = {
-									name: property.escapedName,
-									type: convertToStoredType(
-										typeChecker.typeToString(
-											typeChecker.getTypeAtLocation(
-												(property.declarations[0] as any).type
-											)
-										)
-									),
-									fetch: `this.model[${property.escapedName}]`
+							const viewModelProperty = viewModelProperties.find(p => p.escapedName == property.escapedName);
+
+							if (viewModelProperty) {
+								const modelPropertyType = typeChecker.getTypeAtLocation(
+									(property.declarations[0] as any).type
+								);
+
+								const viewModelPropertyType = typeChecker.getTypeAtLocation(
+									(viewModelProperty.declarations[0] as any).type
+								);
+
+								if (modelPropertyType.symbol && modelPropertyType.symbol.escapedName == "ForeignReference") {
+									properties[property.escapedName.toString()] = {
+										name: property.escapedName,
+										type: convertToStoredType(typeChecker.typeToString(viewModelPropertyType)),
+										fetch: {
+											single: typeChecker.typeToString(viewModelPropertyType),
+										}
+									}
+								} else if (modelPropertyType.symbol && modelPropertyType.symbol.escapedName == "PrimaryReference") {
+									const asViewModel = typeChecker.typeToString(
+										(viewModelPropertyType as any).resolvedTypeArguments[0]
+									);
+
+									properties[property.escapedName.toString()] = {
+										name: property.escapedName,
+										type: convertToStoredType(typeChecker.typeToString(
+											(viewModelPropertyType as any).resolvedTypeArguments[0]
+										)),
+										fetch: {
+											many: asViewModel
+										}
+									}
+								} else {
+									properties[property.escapedName.toString()] = {
+										name: property.escapedName,
+										type: convertToStoredType(typeChecker.typeToString(modelPropertyType))
+									}
 								}
 							}
 						}
 
 						for (let property of viewModelProperties) {
 							if (!properties[property.escapedName.toString()]) {
-								console.log(property);
-
 								properties[property.escapedName.toString()] = {
 									name: property.escapedName,
 									type: convertToStoredType(
@@ -152,13 +166,12 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 							}
 						}
 
-						console.log(
-							modelProperties.map(p => p.escapedName),
-							properties
-						);
+						viewModels.push({
+							name,
+							properties,
+							path
+						});
 					}
-		
-					console.groupEnd();
 				}
 		
 				return ts.visitEachChild(node, visit, context);
@@ -215,11 +228,18 @@ export function compileServices() {
 	}
 
 	fs.writeFileSync(config.services.serverFile, `
-import { BaseServer } from "vlserver";
+import { BaseServer, ViewModel } from "vlserver";
 
-${routes.map(r => r.controller.imports.map(i => `
-	import { ${i.name} } from ${JSON.stringify(i.file)};
-`.trim())).flat().filter((c, i, a) => a.indexOf(c) == i).join("\n")}
+${[
+	...routes.map(r => r.controller.imports.map(i => `
+		import { ${i.name} } from ${JSON.stringify(i.file)};
+	`.trim())).flat(),
+	...viewModels.map(v => `import { ${v.name} } from ${JSON.stringify(`./${pathtools.relative(
+		pathtools.basename(config.services.serverFile), 
+		v.path.replace(/\.ts$/, "")
+	)}`)};
+	`.trim())
+].filter((c, i, a) => a.indexOf(c) == i).join("\n")}
 
 export class ManagedServer extends BaseServer {
 	prepareRoutes() {
@@ -236,6 +256,41 @@ export class ManagedServer extends BaseServer {
 		)`).join(";\n\n\t\t")}
 	}
 }
+
+ViewModel.mappings = {
+	${viewModels.map(viewModel => `${viewModel.name}: class Composed${viewModel.name} extends ${viewModel.name} {
+		async map() {
+			return {
+				${Object.keys(viewModel.properties).map(name => `${name}: ${(() => {
+					if (!viewModel.properties[name].fetch) {
+						return `this.model.${name}`;
+					}
+
+					if (viewModel.properties[name].fetch.single) {
+						return `new ${viewModel.properties[name].fetch.single}(await this.model.${name}.fetch())`;
+					}
+
+					if (viewModel.properties[name].fetch.many) {
+						const asViewModel = viewModel.properties[name].fetch.many;
+
+						return `(await this.model.${name}.includeTree(ViewModel.mappings.${asViewModel}.items).toArray()).map(item => new ${asViewModel}(item))`;
+					}
+				})()}`).join(",\n\t\t\t\t")}
+			}
+		};
+
+		static get items() { 
+			return {
+				${Object.keys(viewModel.properties).map(name => viewModel.properties[name].fetch ? `
+			
+				${name}: ViewModel.mappings.${viewModel.properties[name].fetch.single || viewModel.properties[name].fetch.many}.items
+
+			`.trim() : `${name}: true`).join(",\n\t\t\t\t")}
+			};
+		}
+	}`.trim()).join(",\n\t")}
+};
+
 	`.trim());
 }
 

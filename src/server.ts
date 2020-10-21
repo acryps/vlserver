@@ -22,17 +22,35 @@ export class BaseServer {
 
 		// start express server
 		this.app.listen(port, () => {
-			console.log(this.app._router.stack.filter(r => r.route).map(r => r.route.path));
+			console.log(`app started on ${port}`);
 		});
 	}
 
 	expose<TController>(id: string, controller: TController, paramMappings: { [key: string]: any }, handler: (controller: TController, params: any) => any) {
 		this.app.get(`/${id}`, async (req, res) => {
+			console.log(`request`);
+
 			try {
 				let data = await handler(controller, {});
 
-				if (data && typeof data == "object" && "resolveToJSON()" in data) {
+				if (data && typeof data == "object" && "fetch" in data && typeof data.fetch == "function") {
+					data = await data.fetch();
+				}
+
+				if (data && typeof data == "object" && "toArray" in data && typeof data.toArray == "function") {
+					data = await data.toArray();
+				}
+
+				if (data && typeof data == "object" && "resolveToJSON" in data && typeof data.resolveToJSON == "function") {
 					data = await data.resolveToJSON();
+				}
+
+				if (data && Array.isArray(data)) {
+					for (let i = 0; i < data.length; i++) {
+						if (data[i] && typeof data[i] == "object" && "resolveToJSON" in data[i]) {
+							data[i] = await data[i].resolveToJSON();
+						}
+					}
 				}
 
 				res.json({
@@ -40,7 +58,8 @@ export class BaseServer {
 				});
 			} catch (e) {
 				res.json({
-					error: e + ""
+					error: e + "",
+					stack: e.stack
 				});
 			} 
 		});
