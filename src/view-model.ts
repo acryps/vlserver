@@ -24,7 +24,7 @@ export class ViewModel<TModel> implements JSONResolvable {
 		const firstModel = sources[0] as any;
 
 		if ("$meta" in firstModel) {
-			const mapping = ViewModel.mappings[this.name];
+			const mapping = ViewModel.mappings[this.name].items;
 			const set = firstModel.$meta.set as DbSet<Entity<QueryProxy>, QueryProxy>;
 			const ids = sources.map(s => (s as unknown as Entity<QueryProxy>).id);
 
@@ -40,13 +40,22 @@ export class ViewModel<TModel> implements JSONResolvable {
 				}
 			}
 
+			// load remaining data
 			const data = await set.where(item => item.id.includedIn(ids)).includeTree(referencedTypes).toArray();
 
-			console.log(data);
+			// assign prefetched data to sources
+			for (let item of sources) {
+				const prefetched = data.find(i => i.id == (item as any).id);
 
-			// if () {
+				// go thru all the prefetched items
+				for (let key in mapping) {
+					if (typeof mapping[key] == "object") {
+						item[key]["$stored"] = prefetched[key]["$stored"];
+					}
+				}
+			}
 
-			// }
+			console.warn(`[performance] post-fetching for '${viewModel.name}' can be optimized by using .include() in the manager`);
 		}
 
 		return sources.map(s => new viewModel(s));
