@@ -1,5 +1,5 @@
 import { JSONResolvable } from "./resolve";
-import { DbSet, Entity, QueryProxy } from "vlquery";
+import { DbSet, Entity, QueryProxy, Query } from "vlquery";
 
 export class ViewModel<TModel> implements JSONResolvable {
 	static mappings: any; // global mappings injected by server routing
@@ -11,9 +11,20 @@ export class ViewModel<TModel> implements JSONResolvable {
 		return this.model;
 	}
 
-	static async from<TModel>(sources: TModel[]) {
+	static async from<TModel>(data: TModel[] | Query<Entity<QueryProxy>, QueryProxy>) {
 		// resolve promises
-		sources = await sources;
+		while ("then" in data) {
+			data = await data;
+		}
+
+		let sources;
+
+		// resolve queries
+		if ("toArray" in sources && typeof sources.toArray == "function") {
+			sources = await sources.include(ViewModel.mappings[this.name].items).toArray();
+		} else {
+			sources = data;
+		}
 
 		// return nothing if no sources are present
 		if (!sources.length) {
@@ -23,7 +34,7 @@ export class ViewModel<TModel> implements JSONResolvable {
 		const viewModel = this;
 		const firstModel = sources[0] as any;
 
-		if ("$meta" in firstModel) {
+		if ("$meta" in firstModel && "id" in firstModel) {
 			const mapping = ViewModel.mappings[this.name].items;
 			const set = firstModel.$meta.set as DbSet<Entity<QueryProxy>, QueryProxy>;
 			const ids = sources.map(s => (s as unknown as Entity<QueryProxy>).id);
@@ -55,7 +66,7 @@ export class ViewModel<TModel> implements JSONResolvable {
 				}
 			}
 
-			console.warn(`[performance] post-fetching for '${viewModel.name}' can be optimized by using .include() in the manager`);
+			console.warn(`[performance] post-fetching for '${viewModel.name}' can be optimized by using .include() in the manager or by passing the queryable`);
 		}
 
 		return sources.map(s => new viewModel(s));
