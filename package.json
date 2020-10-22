@@ -5,8 +5,7 @@
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
 	"scripts": {
-		"install": "tsc",
-		"postinstall": "npx vlquery compile"
+		"prepare": "tsc && npx vlquery compile"
 	},
 	"bin": {
 		"vlserver": "bin/vlserver.js"
