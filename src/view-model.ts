@@ -12,11 +12,6 @@ export class ViewModel<TModel> implements JSONResolvable {
 	}
 
 	static async from<TModel>(data: TModel[] | Queryable<Entity<QueryProxy>, QueryProxy>) {
-		// resolve promises
-		while ("then" in data) {
-			data = await data;
-		}
-
 		let sources;
 
 		// resolve queries
