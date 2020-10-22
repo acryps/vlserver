@@ -1,5 +1,5 @@
 import { JSONResolvable } from "./resolve";
-import { DbSet, Entity, QueryProxy, Query } from "vlquery";
+import { DbSet, Entity, QueryProxy, Queryable } from "vlquery";
 
 export class ViewModel<TModel> implements JSONResolvable {
 	static mappings: any; // global mappings injected by server routing
@@ -11,7 +11,7 @@ export class ViewModel<TModel> implements JSONResolvable {
 		return this.model;
 	}
 
-	static async from<TModel>(data: TModel[] | Query<Entity<QueryProxy>, QueryProxy>) {
+	static async from<TModel>(data: TModel[] | Queryable<Entity<QueryProxy>, QueryProxy>) {
 		// resolve promises
 		while ("then" in data) {
 			data = await data;
