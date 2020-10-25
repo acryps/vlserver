@@ -1,8 +1,10 @@
 import { config } from "../config";
 import * as ts from "typescript";
 import * as fs from "fs";
-import * as pathtools from "path";
+import { posix } from "path";
 import { sha512 } from "js-sha512";
+
+const pathtools = posix;
 
 let routes = [];
 const viewModels = [];
