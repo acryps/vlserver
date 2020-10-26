@@ -11,7 +11,7 @@ export class ViewModel<TModel> implements JSONResolvable {
 		return this.model;
 	}
 
-	static async from<TModel>(data: TModel[] | Queryable<Entity<QueryProxy>, QueryProxy>) {
+	static async from(data: any[] | Queryable<any, any>) {
 		let sources;
 
 		// resolve queries
@@ -29,6 +29,7 @@ export class ViewModel<TModel> implements JSONResolvable {
 		const viewModel = this;
 		const firstModel = sources[0] as any;
 
+		// check if the data is a database entity
 		if ("$meta" in firstModel && "id" in firstModel) {
 			const mapping = ViewModel.mappings[this.name].items;
 			const set = firstModel.$meta.set as DbSet<Entity<QueryProxy>, QueryProxy>;
