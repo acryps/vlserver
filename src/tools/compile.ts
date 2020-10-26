@@ -232,12 +232,12 @@ import { BaseServer, ViewModel } from "vlserver";
 
 ${[
 	...routes.map(r => r.controller.imports.map(i => `
-		import { ${i.name} } from ${JSON.stringify(i.file)};
+		import { ${i.name} } from ${JSON.stringify(i.file.replace(/\\/g, "/"))};
 	`.trim())).flat(),
 	...viewModels.map(v => `import { ${v.name} } from ${JSON.stringify(`./${pathtools.relative(
 		pathtools.basename(config.services.serverOutFile), 
 		v.path.replace(/\.ts$/, "")
-	)}`)};
+	).replace(/\\/g, "/")}`)};
 	`.trim())
 ].filter((c, i, a) => a.indexOf(c) == i).join("\n")}
 
