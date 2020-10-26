@@ -11,13 +11,16 @@ if (path.parse(rootFolder).root == rootFolder) {
 	throw new Error(`No vlconfig.json configuration found in '${process.cwd()}'!`);
 }
 
-const userConfig = JSON.parse(fs.readFileSync(`${rootFolder}/vlconfig.json`).toString());
+// move process into root folder
+process.chdir(rootFolder);
+
+const userConfig = JSON.parse(fs.readFileSync(`vlconfig.json`).toString());
 
 export const config = {
 	root: rootFolder,
 	services: {
 		outFile: (userConfig.services && userConfig.services.outFile) || "services.ts",
-		serverFile: (userConfig.services && userConfig.services.serverOut) || "server.ts",
+		serverOutFile: (userConfig.services && userConfig.services.serverOutFile) || "server.ts",
 		scan: (userConfig.services && userConfig.services.scan) || ["."]
 	}
 };

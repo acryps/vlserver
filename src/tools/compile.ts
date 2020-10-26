@@ -1,10 +1,8 @@
-import { config } from "../config";
+import { config } from "./config";
 import * as ts from "typescript";
 import * as fs from "fs";
-import { posix } from "path";
+import * as pathtools from "path";
 import { sha512 } from "js-sha512";
-
-const pathtools = posix;
 
 let routes = [];
 const viewModels = [];
@@ -22,7 +20,7 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 						if (node.moduleSpecifier.text[0] == ".") {
 							imports.push({
 								file: `./${pathtools.relative(
-									pathtools.dirname(pathtools.resolve(config.root, config.services.serverFile)),
+									pathtools.dirname(pathtools.resolve(config.root, config.services.serverOutFile)),
 									pathtools.resolve(pathtools.dirname(path), node.moduleSpecifier.text)
 								).replace(/\.ts$/, "")}`,
 								name: name.trim()
@@ -41,7 +39,7 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 		
 					imports.push({
 						file: `./${pathtools.relative(
-							pathtools.dirname(pathtools.resolve(config.root, config.services.serverFile)),
+							pathtools.dirname(pathtools.resolve(config.root, config.services.serverOutFile)),
 							sourceFile.fileName
 						).replace(/\.ts$/, "")}`,
 						name
@@ -229,7 +227,7 @@ export function compileServices() {
 		scan(pathtools.resolve(dir));
 	}
 
-	fs.writeFileSync(config.services.serverFile, `
+	fs.writeFileSync(config.services.serverOutFile, `
 import { BaseServer, ViewModel } from "vlserver";
 
 ${[
@@ -237,7 +235,7 @@ ${[
 		import { ${i.name} } from ${JSON.stringify(i.file)};
 	`.trim())).flat(),
 	...viewModels.map(v => `import { ${v.name} } from ${JSON.stringify(`./${pathtools.relative(
-		pathtools.basename(config.services.serverFile), 
+		pathtools.basename(config.services.serverOutFile), 
 		v.path.replace(/\.ts$/, "")
 	)}`)};
 	`.trim())
