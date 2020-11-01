@@ -241,7 +241,7 @@ export function compileServices() {
 	}
 
 	fs.writeFileSync(config.services.serverOutFile, `
-import { BaseServer, ViewModel, InjectContainer } from "vlserver";
+import { BaseServer, ViewModel, Inject } from "vlserver";
 
 ${[
 	...routes.map(r => r.controller.imports.map(i => `
@@ -255,7 +255,7 @@ ${[
 ].filter((c, i, a) => a.indexOf(c) == i).join("\n")}
 
 Inject.mappings = {
-	${Object.keys(injects).map(key => `${JSON.stringify(key)} = {
+	${Object.keys(injects).map(key => `${JSON.stringify(key)}: {
 		objectConstructor: ${key},
 		parameters: ${JSON.stringify(injects[key])}
 	}`)}
