@@ -240,6 +240,17 @@ export function compileServices() {
 		scan(pathtools.resolve(dir));
 	}
 
+	let missingPaths = [];
+		let path = pathtools.join(config.root, config.services.serverOutFile);
+
+		while (!fs.existsSync(path = pathtools.dirname(path))) {
+			missingPaths.push(path);
+		}
+
+		for (let path of missingPaths.reverse()) {
+			fs.mkdirSync(path);
+		}
+
 	fs.writeFileSync(config.services.serverOutFile, `
 import { BaseServer, ViewModel, Inject } from "vlserver";
 
