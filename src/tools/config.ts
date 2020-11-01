@@ -22,9 +22,9 @@ export const config = {
 	services: {
 		serverOutFile: (userConfig.services && userConfig.services.serverOutFile) || "server.ts",
 		scan: (userConfig.services && userConfig.services.scan) || ["."],
-		endpoints: (userConfig.services.endpoints || []).map(item => {
+		endpoints: ((userConfig.services && userConfig.services.endpoints) || []).map(item => {
 			if (item.type == "native") {
-				return new NativeServiceAdapter(item)
+				return new NativeServiceAdapter(item);
 			}
 		})
 	}
