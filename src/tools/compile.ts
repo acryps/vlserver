@@ -68,7 +68,7 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 
 										if (declaration && declaration.kind == ts.SyntaxKind.Constructor) {
 											for (let parameter of declaration.parameters) {
-												injects[parameterTypeName].push(parameter.type.typeNAme.escapedText);
+												injects[parameterTypeName].push(parameter.type.typeName.escapedText);
 											}
 										}
 									}
