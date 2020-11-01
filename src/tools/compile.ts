@@ -60,6 +60,8 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 										name: param.type.typeName.escapedText,
 										injects: []
 									});
+
+									console.log(param.type);
 								}
 							}
 		
