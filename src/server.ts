@@ -1,10 +1,13 @@
 import * as express from "express";
-import { ViewModel } from ".";
+import { RunContext } from "vlquery";
 
 export class BaseServer {
 	app: express.Application;
 
 	prepareRoutes() {}
+	createRunContext(req, res) {
+		return new RunContext();
+	}
 
 	modules: [];
 
@@ -17,8 +20,8 @@ export class BaseServer {
 		this.prepareRoutes();
 
 		this.app.get("*", (req, res) => {
-			res.json("works");
-		})
+			res.status(404).end("Route not found!");
+		});
 
 		// start express server
 		this.app.listen(port, () => {
@@ -26,12 +29,14 @@ export class BaseServer {
 		});
 	}
 
-	expose<TController>(id: string, controller: TController, paramMappings: { [key: string]: any }, handler: (controller: TController, params: any) => any) {
+	expose<TController>(id: string, paramMappings: { [key: string]: any }, handler: (context: RunContext, params: any) => any) {
 		this.app.get(`/${id}`, async (req, res) => {
 			console.log(`request`);
 
+			const context = this.createRunContext(req, res);
+
 			try {
-				let data = await handler(controller, {});
+				let data = await handler(context, {});
 
 				if (data && typeof data == "object" && "fetch" in data && typeof data.fetch == "function") {
 					data = await data.fetch();

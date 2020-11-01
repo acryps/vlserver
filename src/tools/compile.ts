@@ -57,7 +57,8 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 							if (member.kind == ts.SyntaxKind.Constructor) {
 								for (let param of member.parameters) {
 									controller.injects.push({
-										name: param.type.typeName.escapedText
+										name: param.type.typeName.escapedText,
+										injects: []
 									});
 								}
 							}
@@ -245,14 +246,13 @@ export class ManagedServer extends BaseServer {
 	prepareRoutes() {
 		${routes.map(route => `this.expose(
 			${JSON.stringify(route.id)},
-			new ${route.controller.name}(${route.controller.injects.map(i => `new ${i.name}()`)}),
 			{${route.parameters.length ? `
 				${route.parameters.map(parameter => `${JSON.stringify(parameter.name)}: {
 					isArray: ${parameter.isArray},
 					type: ${convertToStoredType(parameter.type)}
 				}`)}
 			` : ""}},
-			(controller, params) => controller.${route.name}(${route.parameters.map(p => `params.${p.name}`).join(", ")})
+			(context, params) => new ${route.controller.name}(${route.controller.injects.map(i => `new ${i.name}(${i.injects.map(i => `new ${i.name}(context)`)})`)}).${route.name}(${route.parameters.map(p => `params.${p.name}`).join(", ")})
 		)`).join(";\n\n\t\t")}
 	}
 }
