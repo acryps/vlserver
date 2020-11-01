@@ -1,5 +1,6 @@
 import fs = require("fs");
 import path = require("path");
+import { NativeServiceAdapter } from "./adapters/native";
 
 let rootFolder = process.cwd();
 
@@ -19,8 +20,12 @@ const userConfig = JSON.parse(fs.readFileSync(`vlconfig.json`).toString());
 export const config = {
 	root: rootFolder,
 	services: {
-		outFile: (userConfig.services && userConfig.services.outFile) || "services.ts",
 		serverOutFile: (userConfig.services && userConfig.services.serverOutFile) || "server.ts",
-		scan: (userConfig.services && userConfig.services.scan) || ["."]
+		scan: (userConfig.services && userConfig.services.scan) || ["."],
+		endpoints: (userConfig.services.endpoints || []).map(item => {
+			if (item.type == "native") {
+				return new NativeServiceAdapter(item)
+			}
+		})
 	}
 };
