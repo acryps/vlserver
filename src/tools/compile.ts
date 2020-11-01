@@ -258,7 +258,7 @@ Inject.mappings = {
 	${Object.keys(injects).map(key => `${JSON.stringify(key)}: {
 		objectConstructor: ${key},
 		parameters: ${JSON.stringify(injects[key])}
-	}`)}
+	}`).join(",\n\t")}
 };
 
 export class ManagedServer extends BaseServer {
@@ -271,7 +271,7 @@ export class ManagedServer extends BaseServer {
 					type: ${convertToStoredType(parameter.type)}
 				}`)}
 			` : ""}},
-			(inject, context, params) => inject.construct(${route.controller.name}).${route.name}(${route.parameters.map(p => `params.${p.name}`).join(", ")})
+			(inject, params) => inject.construct(${route.controller.name}).${route.name}(${route.parameters.map(p => `params.${p.name}`).join(", ")})
 		)`).join(";\n\n\t\t")}
 	}
 }

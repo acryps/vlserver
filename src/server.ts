@@ -1,14 +1,29 @@
 import * as express from "express";
 import { RunContext } from "vlquery";
+import { Inject } from ".";
 
 export class BaseServer {
 	app: express.Application;
 
 	prepareRoutes() {}
+
 	createRunContext(req, res) {
 		return new RunContext();
 	}
 
+	createDatabaseContext(context: RunContext) {
+		if (typeof this.databaseContext == "function") {
+			return new this.databaseContext(context);
+		}
+
+		if (this.databaseContext) {
+			return this.databaseContext;
+		}
+
+		return null;
+	}
+
+	databaseContext: new (context: RunContext) => any | any;
 	modules: [];
 
 	constructor() {
@@ -29,14 +44,20 @@ export class BaseServer {
 		});
 	}
 
-	expose<TController>(id: string, paramMappings: { [key: string]: any }, handler: (context: RunContext, params: any) => any) {
+	expose<TController>(id: string, paramMappings: { [key: string]: any }, handler: (inject: Inject, params: any) => any) {
 		this.app.get(`/${id}`, async (req, res) => {
 			console.log(`request`);
 
+			// create run context
 			const context = this.createRunContext(req, res);
 
+			// create injector with DbContext global
+			const injector = new Inject({
+				DbContext: this.createDatabaseContext(context)
+			});
+
 			try {
-				let data = await handler(context, {});
+				let data = await handler(injector, {});
 
 				if (data && typeof data == "object" && "fetch" in data && typeof data.fetch == "function") {
 					data = await data.fetch();
