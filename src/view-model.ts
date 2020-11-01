@@ -16,7 +16,7 @@ export class ViewModel<TModel> implements JSONResolvable {
 
 		// resolve queries
 		if ("toArray" in data && typeof data.toArray == "function") {
-			sources = await sources.include(ViewModel.mappings[this.name].items).toArray();
+			sources = await data.include(ViewModel.mappings[this.name].items).toArray();
 		} else {
 			sources = data;
 		}
