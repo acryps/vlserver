@@ -133,7 +133,9 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 									(viewModelProperty.declarations[0] as any).type
 								);
 
-								if (modelPropertyType.symbol && modelPropertyType.symbol.escapedName == "ForeignReference") {
+								const modelPropertyName = (property.declarations[0] as any) && (property.declarations[0] as any).type && (property.declarations[0] as any).type.getText();
+
+								if (modelPropertyName && modelPropertyName.startsWith("Partial<ForeignReference<")) {
 									properties[property.escapedName.toString()] = {
 										name: property.escapedName,
 										type: convertToStoredType(typeChecker.typeToString(viewModelPropertyType)),
@@ -141,7 +143,7 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 											single: typeChecker.typeToString(viewModelPropertyType),
 										}
 									}
-								} else if (modelPropertyType.symbol && modelPropertyType.symbol.escapedName == "PrimaryReference") {
+								} else if (modelPropertyName && modelPropertyName.startsWith("Partial<PrimaryReference<")) {
 									const asViewModel = typeChecker.typeToString(
 										(viewModelPropertyType as any).resolvedTypeArguments[0]
 									);
