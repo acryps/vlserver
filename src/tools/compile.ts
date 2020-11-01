@@ -6,6 +6,7 @@ import { sha512 } from "js-sha512";
 
 let routes = [];
 const viewModels = [];
+const injects = {};
 
 function compile(path: string, root: string, program: ts.Program, typeChecker: ts.TypeChecker) {
 	const sourceFile = program.getSourceFile(path);
@@ -47,7 +48,6 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 
 					const controller = {
 						name,
-						injects: [],
 						imports
 					};
 		
@@ -55,13 +55,23 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 					if (node.heritageClauses[0] && node.heritageClauses[0].types[0] && node.heritageClauses[0].types[0].expression.escapedText == "Service") {
 						for (let member of node.members) {
 							if (member.kind == ts.SyntaxKind.Constructor) {
-								for (let param of member.parameters) {
-									controller.injects.push({
-										name: param.type.typeName.escapedText,
-										injects: []
-									});
+								injects[name] = [];
 
-									console.log(param.type);
+								for (let param of member.parameters) {
+									const parameterTypeName = param.type.typeName.escapedText;
+
+									injects[name].push(parameterTypeName);
+									injects[parameterTypeName] = [];
+
+									for (let member of (typeChecker.getTypeFromTypeNode(param.type).symbol.declarations[0] as any).symbol.members.values()) {
+										const declaration = member.declarations && member.declarations[0];
+
+										if (declaration && declaration.kind == ts.SyntaxKind.Constructor) {
+											for (let parameter of declaration.parameters) {
+												injects[parameterTypeName].push(parameter.type.typeNAme.escapedText);
+											}
+										}
+									}
 								}
 							}
 		
@@ -231,7 +241,7 @@ export function compileServices() {
 	}
 
 	fs.writeFileSync(config.services.serverOutFile, `
-import { BaseServer, ViewModel } from "vlserver";
+import { BaseServer, ViewModel, InjectContainer } from "vlserver";
 
 ${[
 	...routes.map(r => r.controller.imports.map(i => `
@@ -244,6 +254,13 @@ ${[
 	`.trim())
 ].filter((c, i, a) => a.indexOf(c) == i).join("\n")}
 
+Inject.mappings = {
+	${Object.keys(injects).map(key => `${JSON.stringify(key)} = {
+		objectConstructor: ${key},
+		parameters: ${JSON.stringify(injects[key])}
+	}`)}
+};
+
 export class ManagedServer extends BaseServer {
 	prepareRoutes() {
 		${routes.map(route => `this.expose(
@@ -254,7 +271,7 @@ export class ManagedServer extends BaseServer {
 					type: ${convertToStoredType(parameter.type)}
 				}`)}
 			` : ""}},
-			(context, params) => new ${route.controller.name}(${route.controller.injects.map(i => `new ${i.name}(${i.injects.map(i => `new ${i.name}(context)`)})`)}).${route.name}(${route.parameters.map(p => `params.${p.name}`).join(", ")})
+			(inject, context, params) => inject.construct(${route.controller.name}).${route.name}(${route.parameters.map(p => `params.${p.name}`).join(", ")})
 		)`).join(";\n\n\t\t")}
 	}
 }
