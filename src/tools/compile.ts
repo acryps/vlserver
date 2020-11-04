@@ -138,6 +138,7 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 								if (modelPropertyName && modelPropertyName.startsWith("Partial<ForeignReference<")) {
 									properties[property.escapedName.toString()] = {
 										name: property.escapedName,
+										propertyType: typeChecker.typeToString(viewModelPropertyType),
 										type: convertToStoredType(typeChecker.typeToString(viewModelPropertyType)),
 										fetch: {
 											single: typeChecker.typeToString(viewModelPropertyType),
@@ -150,6 +151,9 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 
 									properties[property.escapedName.toString()] = {
 										name: property.escapedName,
+										propertyType: typeChecker.typeToString(
+											(viewModelPropertyType as any).resolvedTypeArguments[0]
+										),
 										type: convertToStoredType(typeChecker.typeToString(
 											(viewModelPropertyType as any).resolvedTypeArguments[0]
 										)),
@@ -160,6 +164,7 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 								} else {
 									properties[property.escapedName.toString()] = {
 										name: property.escapedName,
+										propertyType: typeChecker.typeToString(modelPropertyType),
 										type: convertToStoredType(typeChecker.typeToString(modelPropertyType))
 									}
 								}
