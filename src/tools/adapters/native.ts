@@ -39,17 +39,6 @@ export class ${controller.name} {
 	
 	`.trim()).join("\n\n\t")}
 }
-
-${routes.map(route => `this.expose(
-	${JSON.stringify(route.id)},
-	{${route.parameters.length ? `
-		${route.parameters.map(parameter => `${JSON.stringify(parameter.name)}: {
-			isArray: ${parameter.isArray},
-			type: ${convertToStoredType(parameter.type)}
-		}`)}
-	` : ""}},
-	(inject, params) => inject.construct(${route.controller.name}).${route.name}(${route.parameters.map(p => `params.${p.name}`).join(", ")})
-)`).join(";\n\n\t\t")}
 `.trim()).join("\n\n")}
 		
 		`.trim());
