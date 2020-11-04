@@ -21,7 +21,7 @@ ${controllers.map(controller => `
 export class ${controller.name} {
 	${routes.filter(r => r.controller == controller).map(route => `
 	
-	${route.name}(${route.parameters.map(parameter => `${parameter.name}: ${parameter.type}${parameter.isArray ? "[]" : ""}`)}) {
+	async ${route.name}(${route.parameters.map(parameter => `${parameter.name}: ${parameter.type}${parameter.isArray ? "[]" : ""}`)}) {
 		const data = new FormData();
 		${route.parameters.map(parameter => `data.append(${JSON.stringify(parameter.id)}, ${parameter.name})`)}
 
@@ -30,7 +30,7 @@ export class ${controller.name} {
 			body: data
 		}).then(res => res.json()).then(r => {
 			if (r.data) {
-				return r.data as ${route.returnType};
+				return r.data;
 			} else {
 				throw new Error(r.error);
 			}
