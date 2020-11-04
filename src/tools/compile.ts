@@ -103,6 +103,11 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 									name: member.name.escapedText,
 									returnType: types.map(type => type.symbol.escapedName),
 									parameters: member.parameters.map(parameter => ({
+										id: sha512([
+											id,
+											parameter.name.escapedText,
+											parameter.type.getText(sourceFile)
+										].join("_".repeat(420))).replace(/[a-f0-9]{16}/g, m => Buffer.from(parseInt(m, 16).toString(36)).toString('base64').substr(2, 4)),
 										name: parameter.name.escapedText,
 										isArray: parameter.type.getText(sourceFile).includes("[]") || parameter.type.getText(sourceFile).includes("Array<"),
 										type: parameter.type.getText(sourceFile).replace("[]", "").replace("Array<", "").replace(">", "")
@@ -284,12 +289,12 @@ export class ManagedServer extends BaseServer {
 		${routes.map(route => `this.expose(
 			${JSON.stringify(route.id)},
 			{${route.parameters.length ? `
-				${route.parameters.map(parameter => `${JSON.stringify(parameter.name)}: {
+				${route.parameters.map(parameter => `${JSON.stringify(parameter.id)}: {
 					isArray: ${parameter.isArray},
 					type: ${convertToStoredType(parameter.type)}
 				}`)}
 			` : ""}},
-			(inject, params) => inject.construct(${route.controller.name}).${route.name}(${route.parameters.map(p => `params.${p.name}`).join(", ")})
+			(inject, params) => inject.construct(${route.controller.name}).${route.name}(${route.parameters.map(p => `params.${p.id}`).join(", ")})
 		)`).join(";\n\n\t\t")}
 	}
 }
