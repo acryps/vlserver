@@ -3,7 +3,7 @@ import { ServiceAdapter } from "./base";
 
 export class NativeServiceAdapter extends ServiceAdapter {
 	generate(routes, viewModels, config) {
-		const controllers = routes.map(r => r.controller).map((c, i, a) => a.indexOf(c) == i);
+		const controllers = routes.map(r => r.controller).filter((c, i, a) => a.indexOf(c) == i);
 
 		fs.writeFileSync(this.outFile, `
 		
