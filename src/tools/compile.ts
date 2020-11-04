@@ -243,15 +243,15 @@ export function compileServices() {
 	}
 
 	let missingPaths = [];
-		let path = pathtools.join(config.root, config.services.serverOutFile);
+	let path = pathtools.join(config.root, config.services.serverOutFile);
 
-		while (!fs.existsSync(path = pathtools.dirname(path))) {
-			missingPaths.push(path);
-		}
+	while (!fs.existsSync(path = pathtools.dirname(path))) {
+		missingPaths.push(path);
+	}
 
-		for (let path of missingPaths.reverse()) {
-			fs.mkdirSync(path);
-		}
+	for (let path of missingPaths.reverse()) {
+		fs.mkdirSync(path);
+	}
 
 	fs.writeFileSync(config.services.serverOutFile, `
 import { BaseServer, ViewModel, Inject } from "vlserver";
@@ -324,6 +324,10 @@ ViewModel.mappings = {
 };
 
 	`.trim());
+
+	for (let endpoint of config.services.endpoints) {
+		endpoint.generate(routes, viewModels, config);
+	}
 }
 
 function convertToStoredType(type) {

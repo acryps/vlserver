@@ -1,6 +1,7 @@
 import fs = require("fs");
 import path = require("path");
 import { NativeServiceAdapter } from "./adapters/native";
+import { ServiceAdapter } from "./adapters/base";
 
 let rootFolder = process.cwd();
 
@@ -26,6 +27,8 @@ export const config = {
 			if (item.type == "native") {
 				return new NativeServiceAdapter(item);
 			}
+
+			return new ServiceAdapter(item);
 		})
 	}
 };
