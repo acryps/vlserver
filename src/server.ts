@@ -1,11 +1,16 @@
 import * as express from "express";
 import { RunContext } from "vlquery";
 import { Inject } from ".";
+import { ServerModule } from "./module";
 
 export class BaseServer {
 	app: express.Application;
 
 	prepareRoutes() {}
+
+	use(module: ServerModule) {
+		module.install(this);
+	}
 
 	createRunContext(req, res) {
 		return new RunContext();
