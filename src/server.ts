@@ -50,7 +50,7 @@ export class BaseServer {
 	}
 
 	expose<TController>(id: string, paramMappings: { [key: string]: any }, handler: (inject: Inject, params: any) => any) {
-		this.app.get(`/${id}`, async (req, res) => {
+		this.app.post(`/${id}`, async (req, res) => {
 			console.log(`request`);
 
 			// create run context
