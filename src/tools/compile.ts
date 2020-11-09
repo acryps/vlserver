@@ -76,14 +76,14 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 							}
 		
 							if (member.kind == ts.SyntaxKind.MethodDeclaration) {
-								const types = [];
 								let type = typeChecker.getSignatureFromDeclaration(member).getReturnType() as any;
+								const types = [type];
 
 								if (type.resolvedTypeArguments) {
 									while (type && type.resolvedTypeArguments && type.resolvedTypeArguments[0]) {
-										types.push(type);
-
 										type = type.resolvedTypeArguments[0];
+
+										types.unshift(type);
 									}
 								}
 
