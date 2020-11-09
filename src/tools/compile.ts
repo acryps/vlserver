@@ -135,7 +135,7 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 									id,
 									controller,
 									name: member.name.escapedText,
-									returnType: types,
+									returnType: typeNames,
 									parameters: member.parameters.map(parameter => ({
 										id: sha512([
 											id,
