@@ -49,7 +49,7 @@ export class BaseServer {
 		});
 	}
 
-	expose<TController>(id: string, paramMappings: { [key: string]: any }, handler: (inject: Inject, params: any) => any) {
+	expose(id: string, paramMappings: { [key: string]: any }, handler: (inject: Inject, params: any) => any) {
 		this.app.post(`/${id}`, async (req, res) => {
 			console.log(`request`);
 
@@ -88,6 +88,8 @@ export class BaseServer {
 					data
 				});
 			} catch (e) {
+				console.error(e);
+
 				res.json({
 					error: e + "",
 					stack: e.stack
