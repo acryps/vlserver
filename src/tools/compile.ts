@@ -328,7 +328,7 @@ export class ManagedServer extends BaseServer {
 					type: ${convertToStoredType(parameter.type)}
 				}`)}
 			` : ""}},
-			(inject, params) => inject.construct(${route.controller.name}).${route.name}(${route.parameters.map(p => `params.${p.id}`).join(", ")})
+			(inject, params) => inject.construct(${route.controller.name}).${route.name}(${route.parameters.map(p => `params[${JSON.stringify(p.id)}]`).join(", ")})
 		)`).join(";\n\n\t\t")}
 	}
 }
