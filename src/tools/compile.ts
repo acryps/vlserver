@@ -77,7 +77,7 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 		
 							if (member.kind == ts.SyntaxKind.MethodDeclaration) {
 								let type = typeChecker.getSignatureFromDeclaration(member).getReturnType() as any;
-								const types = [type];
+								let types = [type];
 
 								if (type.resolvedTypeArguments) {
 									while (type && type.resolvedTypeArguments && type.resolvedTypeArguments[0]) {
@@ -86,6 +86,8 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 										types.unshift(type);
 									}
 								}
+
+								types = types.filter(t => t.symbol);
 
 								const id = sha512([
 									controller.name,

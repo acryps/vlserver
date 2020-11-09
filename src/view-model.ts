@@ -11,7 +11,8 @@ export class ViewModel<TModel> implements JSONResolvable {
 		return this.model;
 	}
 
-	static async from(data: any[] | Queryable<any, any>) {		const viewModel = this;
+	static async from(data: any[] | Queryable<any, any>): Promise<UnknownFromResult> {
+		const viewModel = this;
 
 		// resolve queries
 		if ("toArray" in data && typeof data.toArray == "function") {
@@ -96,3 +97,11 @@ export class ViewModel<TModel> implements JSONResolvable {
 		return mapped;
 	}
 }
+
+// proxy class
+// typescript does not allow this type references in static methods
+//  https://github.com/microsoft/TypeScript/issues/5863
+//
+// we use this instead, it will be replaced with the correct type
+// by getting the first non null and non error return path of the service method
+class UnknownFromResult {}
