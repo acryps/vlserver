@@ -104,4 +104,4 @@ export class ViewModel<TModel> implements JSONResolvable {
 //
 // we use this instead, it will be replaced with the correct type
 // by getting the first non null and non error return path of the service method
-class UnknownFromResult {}
+export class UnknownFromResult {}
