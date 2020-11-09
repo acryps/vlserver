@@ -29,7 +29,7 @@ export class ${controller.name} {
 			method: "post",
 			body: data
 		}).then(res => res.json()).then(r => {
-			if (r.data) {
+			if ("data" in r) {
 				return r.data;
 			} else {
 				throw new Error(r.error);
