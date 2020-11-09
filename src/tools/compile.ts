@@ -87,11 +87,43 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 									}
 								}
 
-								types = types.filter(t => t.symbol);
+								// remove Promises from type chain
+								types = types.filter(t => t.symbol && t.symbol.escapedName != "Promise");
+
+								const typeNames = [];
+
+								// resolve unknown from results
+								for (let type of types) {
+									if (type.symbol.escapedName == "UnknownFromResult") {
+										let name;
+
+										function findReturn(node): ts.Node {
+											if (ts.isReturnStatement(node)) {
+												if (node.expression) {
+													if (ts.isCallExpression(node.expression)) {
+														if ((node.expression.expression as any)?.name?.escapedText == "from") {
+															if ((node.expression.expression as any).expression) {
+																name = (node.expression.expression as any).expression.escapedText;
+															}
+														}
+													}
+												}
+											}
+
+											return ts.visitEachChild(node, findReturn, context);
+										}
+
+										ts.visitNode(member, findReturn);
+
+										typeNames.push(name);
+									} else {
+										typeNames.push(type.symbol.escapedName);
+									}
+								}
 
 								const id = sha512([
 									controller.name,
-									...types.map(type => type.symbol.escapedName),
+									...types,
 									member.name.escapedText,
 									JSON.stringify(member.parameters.map(parameter => ({
 										name: parameter.name.escapedText,
@@ -103,7 +135,7 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 									id,
 									controller,
 									name: member.name.escapedText,
-									returnType: types.map(type => type.symbol.escapedName),
+									returnType: types,
 									parameters: member.parameters.map(parameter => ({
 										id: sha512([
 											id,
