@@ -30,7 +30,7 @@ export class ${controller.name} {
 			body: data
 		}).then(res => res.json()).then(r => {
 			if ("data" in r) {
-				return r.data;
+				return r.data as ${route.returnType};
 			} else {
 				throw new Error(r.error);
 			}

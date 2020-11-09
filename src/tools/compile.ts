@@ -93,7 +93,7 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 								const typeNames = [];
 
 								// resolve unknown from results
-								for (let type of types) {
+								for (let type of types.reverse()) {
 									if (type.symbol.escapedName == "UnknownFromResult") {
 										let name;
 
@@ -115,7 +115,12 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 
 										ts.visitNode(member, findReturn);
 
-										typeNames.push(name);
+										if (!name) {
+											throw new Error(`Cannot find return type of '${member.name.escapedText}' in '${controller.name}'!`);
+										}
+
+										// add resolved from name to type stack
+										typeNames.push("Array", name);
 									} else {
 										typeNames.push(type.symbol.escapedName);
 									}
