@@ -11,22 +11,22 @@ export class ViewModel<TModel> implements JSONResolvable {
 		return this.model;
 	}
 
-	static async from(data: any[] | Queryable<any, any>) {
-		let sources;
+	static async from(data: any[] | Queryable<any, any>) {		const viewModel = this;
 
 		// resolve queries
 		if ("toArray" in data && typeof data.toArray == "function") {
-			sources = await data.include(ViewModel.mappings[this.name].items).toArray();
-		} else {
-			sources = data;
+			return (
+				await data.include(ViewModel.mappings[this.name].items).toArray()
+			).map(s => new viewModel(s));
 		}
+
+		const sources = data as any[];
 
 		// return nothing if no sources are present
 		if (!sources.length) {
 			return [];
 		}
 
-		const viewModel = this;
 		const firstModel = sources[0] as any;
 
 		// check if the data is a database entity
