@@ -23,14 +23,14 @@ export class ${controller.name} {
 	
 	async ${route.name}(${route.parameters.map(parameter => `${parameter.name}: ${parameter.type}${parameter.isArray ? "[]" : ""}`)}) {
 		const data = new FormData();
-		${route.parameters.map(parameter => `data.append(${JSON.stringify(parameter.id)}, ${parameter.name})`)}
+		${route.parameters.map(parameter => `data.append(${JSON.stringify(parameter.id)}, JSON.stringify(${parameter.name}))`)}
 
 		return await fetch(${JSON.stringify(route.id)}, {
 			method: "post",
 			body: data
 		}).then(res => res.json()).then(r => {
 			if ("data" in r) {
-				return r.data as ${route.returnType.slice(0, route.returnType.length - 2).map(t => `${t}<`)}${route.returnType[route.returnType.length - 1]}${">".repeat(route.returnType.length - 2)};
+				return r.data as ${route.returnType.slice(0, route.returnType.length - 1).map(t => `${t}<`)}${route.returnType[route.returnType.length - 1]}${">".repeat(route.returnType.length - 1)};
 			} else {
 				throw new Error(r.error);
 			}
