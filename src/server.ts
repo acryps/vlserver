@@ -2,9 +2,11 @@ import * as express from "express";
 import { RunContext } from "vlquery";
 import { Inject } from ".";
 import { ServerModule } from "./module";
+import * as multer from "multer";
 
 export class BaseServer {
 	app: express.Application;
+	upload; // multer upload handler
 
 	prepareRoutes() {}
 
@@ -33,6 +35,7 @@ export class BaseServer {
 
 	constructor() {
 		this.app = express();
+		this.upload = multer();
 	}
 
 	start(port: number) {
@@ -50,7 +53,15 @@ export class BaseServer {
 	}
 
 	expose(id: string, paramMappings: { [key: string]: any }, handler: (inject: Inject, params: any) => any) {
-		this.app.post(`/${id}`, async (req, res) => {
+		const fields = [];
+
+		for (let param in paramMappings) {
+			fields.push({
+				name: param
+			});
+		}
+
+		this.app.post(`/${id}`, this.upload.fields(fields), async (req, res) => {
 			console.log(`request`);
 
 			// create run context
@@ -62,7 +73,7 @@ export class BaseServer {
 			});
 
 			try {
-				let data = await handler(injector, {});
+				let data = await handler(injector, req.body);
 
 				if (data && typeof data == "object" && "fetch" in data && typeof data.fetch == "function") {
 					data = await data.fetch();
