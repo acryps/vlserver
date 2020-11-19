@@ -188,7 +188,7 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 											single: typeChecker.typeToString(viewModelPropertyType),
 										}
 									}
-								} else if (modelPropertyName && modelPropertyName.startsWith("Partial<PrimaryReference<")) {
+								} else if (modelPropertyName && modelPropertyName.startsWith("PrimaryReference<")) {
 									const asViewModel = typeChecker.typeToString(
 										(viewModelPropertyType as any).resolvedTypeArguments[0]
 									);
