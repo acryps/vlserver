@@ -88,7 +88,7 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 								}
 
 								// remove Promises from type chain
-								types = types.filter(t => t.symbol ? t.symbol.escapedName != "Promise" : true).map(t => t.symbol ? t.symbol.escapedName : t.getText());
+								types = types.filter(t => t.symbol ? t.symbol.escapedName != "Promise" : true).map(t => t.symbol ? t.symbol.escapedName : t.intrinsicName);
 
 								const typeNames = [];
 
