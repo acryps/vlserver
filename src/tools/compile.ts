@@ -366,7 +366,9 @@ ViewModel.mappings = {
 			return {
 				${Object.keys(viewModel.properties).map(name => viewModel.properties[name].fetch ? `
 			
-				${name}: ViewModel.mappings.${viewModel.properties[name].fetch.single || viewModel.properties[name].fetch.many}.items
+				get ${name}() { 
+					return ViewModel.mappings.${viewModel.properties[name].fetch.single || viewModel.properties[name].fetch.many}.items;
+				}
 
 			`.trim() : `${name}: true`).join(",\n\t\t\t\t")}
 			};
