@@ -2,6 +2,7 @@ import fs = require("fs");
 import path = require("path");
 import { NativeServiceAdapter } from "./adapters/native";
 import { ServiceAdapter } from "./adapters/base";
+import { AngularServiceAdapter } from "./adapters/angular";
 
 let rootFolder = process.cwd();
 
@@ -26,6 +27,10 @@ export const config = {
 		endpoints: ((userConfig.services && userConfig.services.endpoints) || []).map(item => {
 			if (item.type == "native") {
 				return new NativeServiceAdapter(item);
+			}
+
+			if (item.type == "angular") {
+				return new AngularServiceAdapter(item);
 			}
 
 			return new ServiceAdapter(item);
