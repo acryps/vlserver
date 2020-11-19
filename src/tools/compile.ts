@@ -88,13 +88,13 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 								}
 
 								// remove Promises from type chain
-								types = types.filter(t => t.symbol && t.symbol.escapedName != "Promise");
+								types = types.filter(t => t.symbol ? t.symbol.escapedName != "Promise" : true).map(t => t.symbol ? t.symbol.escapedName : t.getText());
 
 								const typeNames = [];
 
 								// resolve unknown from results
 								for (let type of types.reverse()) {
-									if (type.symbol.escapedName == "UnknownFromResult") {
+									if (type == "UnknownFromResult") {
 										let name;
 
 										function findReturn(node): ts.Node {
@@ -122,7 +122,7 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 										// add resolved from name to type stack
 										typeNames.push("Array", name);
 									} else {
-										typeNames.push(type.symbol.escapedName);
+										typeNames.push(type);
 									}
 								}
 
