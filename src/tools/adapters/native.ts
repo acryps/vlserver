@@ -29,7 +29,7 @@ export class ${controller.name} {
 			method: "post",
 			body: data
 		}).then(res => res.json()).then(r => {
-			${route.returnType.length ? `
+			${(route.returnType.length || route.returnType[0] == "void") ? `
 			
 			if ("data" in r) {
 				return r.data as ${route.returnType.slice(0, route.returnType.length - 1).map(t => `${t}<`)}${route.returnType[route.returnType.length - 1]}${">".repeat(route.returnType.length - 1)};
