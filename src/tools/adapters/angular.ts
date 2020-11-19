@@ -7,6 +7,8 @@ export class AngularServiceAdapter extends ServiceAdapter {
 
 		fs.writeFileSync(this.outFile, `
 		
+import { Injectable } from "@angular/core";
+
 ${viewModels.map(viewModel => `
 export class ${viewModel.name} {
 	${Object.keys(viewModel.properties).map(name => {
@@ -18,6 +20,7 @@ export class ${viewModel.name} {
 `.trim()).join("\n\n")}
 
 ${controllers.map(controller => `
+@Injectable()
 export class ${controller.name} {
 	${routes.filter(r => r.controller == controller).map(route => `
 	
