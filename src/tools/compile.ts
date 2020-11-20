@@ -413,13 +413,13 @@ ViewModel.mappings = {
 			return item;
 		}
 
-		static toModel(viewModel: ${viewModel.name}) {
+		static async toModel(viewModel: ${viewModel.name}) {
 			${"id" in viewModel.properties ? `
 
 			let model: ${viewModel.modelType};
 			
 			if (viewModel.id) {
-				model = ViewModel.globalFetchingContext.findSet(${viewModel.modelType}).find(viewModel.id)
+				model = await ViewModel.globalFetchingContext.findSet(${viewModel.modelType}).find(viewModel.id)
 			} else {
 				model = new ${viewModel.modelType}();
 			}
