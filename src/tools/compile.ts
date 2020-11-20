@@ -234,6 +234,7 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 						viewModels.push({
 							name,
 							modelType: typeChecker.typeToString(modelType),
+							modelSource: (modelType.symbol as any).parent.escapedName,
 							properties,
 							path
 						});
@@ -314,6 +315,11 @@ ${[
 	...viewModels.map(v => `import { ${v.name} } from ${JSON.stringify(`./${pathtools.relative(
 		pathtools.basename(config.services.serverOutFile), 
 		v.path.replace(/\.ts$/, "")
+	).replace(/\\/g, "/")}`)};
+	`.trim()),
+	...viewModels.map(v => `import { ${v.modelType} } from ${JSON.stringify(`./${pathtools.relative(
+		pathtools.basename(config.services.serverOutFile), 
+		v.modelSource
 	).replace(/\\/g, "/")}`)};
 	`.trim())
 ].filter((c, i, a) => a.indexOf(c) == i).join("\n")}
