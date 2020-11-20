@@ -42,6 +42,8 @@ export class BaseServer {
 		// prepare routes registered by generated managed server
 		this.prepareRoutes();
 
+		ViewModel.globalFetchingContext = this.createDatabaseContext(new RunContext());
+
 		this.app.get("*", (req, res) => {
 			res.status(404).end("Route not found!");
 		});

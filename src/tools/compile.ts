@@ -157,6 +157,7 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 					}
 
 					if (node.heritageClauses[0] && node.heritageClauses[0].types[0] && node.heritageClauses[0].types[0].expression.escapedText == "ViewModel") {
+						const modelType = typeChecker.getTypeAtLocation(node.heritageClauses[0].types[0].typeArguments[0]);
 						const modelProperties = typeChecker.getTypeAtLocation(node.heritageClauses[0].types[0].typeArguments[0]).getProperties();
 						const baseViewModelProperties = typeChecker.getTypeAtLocation(node.heritageClauses[0].types[0]).getProperties();
 
@@ -232,6 +233,7 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 
 						viewModels.push({
 							name,
+							modelType: typeChecker.typeToString(modelType),
 							properties,
 							path
 						});
@@ -403,6 +405,38 @@ ViewModel.mappings = {
 			})()});`).join("\n\t\t\t")}
 
 			return item;
+		}
+
+		static toModel(viewModel: ${viewModel.name}) {
+			${"id" in viewModel.properties ? `
+
+			let model: ${viewModel.modelType};
+			
+			if (viewModel.id) {
+				model = ViewModel.globalFetchingContext.${viewModel.modelType}.find(viewModel.id)
+			} else {
+				model = new ${viewModel.modelType}();
+			}
+
+			`.trim() : `
+			
+			const model = new ${viewModel.modelType}();
+			
+			`.trim()}
+			
+			${Object.keys(viewModel.properties).map(name => `${JSON.stringify(name)} in viewModel && (${(() => {
+				if (viewModel.properties[name].fetch) {
+					if (viewModel.properties[name].fetch.single) {
+						return `model.${name}.id = viewModel.${name} ? viewModel.${name}.id : null`;
+					} else {
+						return "null";
+					}
+				} else {
+					return `model.${name} = viewModel.${name}`;
+				}
+			})()});`).join("\n\t\t\t")}
+
+			return model;
 		}
 	}`.trim()).join(",\n\t")}
 };

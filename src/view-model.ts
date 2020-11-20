@@ -4,11 +4,12 @@ import { DbSet, Entity, QueryProxy, Queryable } from "vlquery";
 export class ViewModel<TModel> implements JSONResolvable {
 	static mappings: any; // global mappings injected by server routing
 	protected model: TModel; // model proxy
+	static globalFetchingContext;
 
 	constructor(private source: TModel) {}
 
 	async toModel() {
-		return this.model;
+		return ViewModel.mappings[this.constructor.name].toModel(this);
 	}
 
 	static async from(data: any[] | Queryable<any, any>): Promise<UnknownFromResult> {
