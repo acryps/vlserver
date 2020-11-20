@@ -396,7 +396,7 @@ ViewModel.mappings = {
 						return `item.${name} = +data.${name}`;
 					}
 
-					if (viewModel.properties[name].propertyType == "date") {
+					if (viewModel.properties[name].propertyType == "Date") {
 						return `item.${name} = new Date(data.${name})`;
 					}
 				}
