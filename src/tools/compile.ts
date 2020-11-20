@@ -234,7 +234,7 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 						viewModels.push({
 							name,
 							modelType: typeChecker.typeToString(modelType),
-							modelSource: (modelType.symbol as any).parent.escapedName,
+							modelSource: modelType.symbol.declarations[0].parent.getSourceFile().fileName,
 							properties,
 							path
 						});
@@ -319,7 +319,7 @@ ${[
 	`.trim()),
 	...viewModels.map(v => `import { ${v.modelType} } from ${JSON.stringify(`./${pathtools.relative(
 		pathtools.basename(config.services.serverOutFile), 
-		v.modelSource
+		v.modelSource.replace(/\.ts$/, "")
 	).replace(/\\/g, "/")}`)};
 	`.trim())
 ].filter((c, i, a) => a.indexOf(c) == i).join("\n")}
