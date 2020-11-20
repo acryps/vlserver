@@ -419,7 +419,7 @@ ViewModel.mappings = {
 			let model: ${viewModel.modelType};
 			
 			if (viewModel.id) {
-				model = ViewModel.globalFetchingContext.${viewModel.modelType}.find(viewModel.id)
+				model = ViewModel.globalFetchingContext.findSet(${viewModel.modelType}).find(viewModel.id)
 			} else {
 				model = new ${viewModel.modelType}();
 			}
