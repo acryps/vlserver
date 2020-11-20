@@ -375,8 +375,8 @@ ViewModel.mappings = {
 		}
 
 		static toViewModel(data) {
-			const item = new ${viewModel.name}();
-			${Object.keys(viewModel.properties).map(name => `${JSON.stringify(name)} in data && (${() => {
+			const item = new ${viewModel.name}(null);
+			${Object.keys(viewModel.properties).map(name => `${JSON.stringify(name)} in data && (${(() => {
 				if (viewModel.properties[name].fetch) {
 					if (viewModel.properties[name].fetch.single) {
 						return `item.${name} = data.${name} && ViewModel.mappings.${viewModel.properties[name].fetch.single}.toViewModel(data.${name});`;
@@ -400,7 +400,7 @@ ViewModel.mappings = {
 						return `item.${name} = new Date(data.${name});`;
 					}
 				}
-			}});`).join("\n\t\t\t")}
+			})()});`).join("\n\t\t\t")}
 
 			return item;
 		}
