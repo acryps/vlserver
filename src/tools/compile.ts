@@ -334,7 +334,7 @@ export class ManagedServer extends BaseServer {
 				}`)}
 			` : ""}},
 			(inject, params) => inject.construct(${route.controller.name}).${route.name}(
-				${route.parameters.map(p => `JSON.parse(params[${JSON.stringify(p.id)}])`).join(",\n\t\t\t\t")}
+				${route.parameters.map(p => `params[${JSON.stringify(p.id)}]`).join(",\n\t\t\t\t")}
 			)
 		)`).join(";\n\n\t\t")}
 	}
@@ -373,6 +373,37 @@ ViewModel.mappings = {
 			`.trim() : `${name}: true`).join(",\n\t\t\t\t")}
 			};
 		}
+
+		static toViewModel(data) {
+			const item = new ${viewModel.name}();
+			${Object.keys(viewModel.properties).map(name => `${JSON.stringify(name)} in data && (${() => {
+				if (viewModel.properties[name].fetch) {
+					if (viewModel.properties[name].fetch.single) {
+						return `item.${name} = data.${name} && ViewModel.mappings.${viewModel.properties[name].fetch.single}.toViewModel(data.${name});`;
+					} else {
+						return `item.${name} = data.${name} && [...data.${name}].map(i => ViewModel.mappings.${viewModel.properties[name].fetch.many}.toViewModel(i));`;
+					}
+				} else {
+					if (viewModel.properties[name].type == "boolean") {
+						return `item.${name} = !!data.${name} : undefined;`;
+					}
+
+					if (viewModel.properties[name].type == "string") {
+						return `item.${name} = \`\${ata.${name}}\`;`;
+					}
+
+					if (viewModel.properties[name].type == "number") {
+						return `item.${name} = +data.${name};`;
+					}
+
+					if (viewModel.properties[name].type == "date") {
+						return `item.${name} = new Date(data.${name});`;
+					}
+				}
+			}});`).join("\n\t\t\t")}
+
+			return item;
+		}
 	}`.trim()).join(",\n\t")}
 };
 
@@ -387,6 +418,7 @@ function convertToStoredType(type) {
 	return {
 		"boolean": '"boolean"',
 		"string": '"string"',
-		"number": '"number"'
+		"number": '"number"',
+		"Date": '"date"'
 	}[type] || type;
 }

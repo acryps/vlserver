@@ -1,6 +1,6 @@
 import * as express from "express";
 import { RunContext } from "vlquery";
-import { Inject } from ".";
+import { Inject, ViewModel } from ".";
 import { ServerModule } from "./module";
 import * as multer from "multer";
 
@@ -73,7 +73,61 @@ export class BaseServer {
 			});
 
 			try {
-				let data = await handler(injector, req.body);
+				const body = req.body;
+				const params = {};
+
+				for (let paramKey in paramMappings) {
+					if (paramKey in body) {
+						switch (paramMappings[paramKey].type) {
+							case "string": {
+								if (paramMappings[paramKey].isArray) {
+									params[paramKey] = [...JSON.parse(body[paramKey])].map(s => `${s}`);
+								} else {
+									params[paramKey] = `${JSON.parse(body[paramKey])}`;
+								}
+
+								break;
+							}
+
+							case "number": {
+								if (paramMappings[paramKey].isArray) {
+									params[paramKey] = [...JSON.parse(body[paramKey])].map(s => +s);
+								} else {
+									params[paramKey] = +JSON.parse(body[paramKey]);
+								}
+
+								break;
+							}
+
+							case "boolean": {
+								if (paramMappings[paramKey].isArray) {
+									params[paramKey] = [...JSON.parse(body[paramKey])].map(s => !!s);
+								} else {
+									params[paramKey] = !!JSON.parse(body[paramKey]);
+								}
+
+								break;
+							}
+
+							case "date": {
+								if (paramMappings[paramKey].isArray) {
+									params[paramKey] = [...JSON.parse(body[paramKey])].map(s => new Date(s));
+								} else {
+									params[paramKey] = new Date(JSON.parse(body[paramKey]));
+								}
+
+								break;
+							}
+
+							default: {
+								const ctr = paramMappings[paramKey].type;
+								params[paramKey] = ViewModel.mappings[ctr.name].toViewModel(body[paramKey]);
+							}
+						}
+					}
+				}
+
+				let data = await handler(injector, params);
 
 				if (data && typeof data == "object" && "fetch" in data && typeof data.fetch == "function") {
 					data = await data.fetch();
