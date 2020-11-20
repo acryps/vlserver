@@ -379,25 +379,25 @@ ViewModel.mappings = {
 			${Object.keys(viewModel.properties).map(name => `${JSON.stringify(name)} in data && (${(() => {
 				if (viewModel.properties[name].fetch) {
 					if (viewModel.properties[name].fetch.single) {
-						return `item.${name} = data.${name} && ViewModel.mappings.${viewModel.properties[name].fetch.single}.toViewModel(data.${name});`;
+						return `item.${name} = data.${name} && ViewModel.mappings.${viewModel.properties[name].fetch.single}.toViewModel(data.${name})`;
 					} else {
-						return `item.${name} = data.${name} && [...data.${name}].map(i => ViewModel.mappings.${viewModel.properties[name].fetch.many}.toViewModel(i));`;
+						return `item.${name} = data.${name} && [...data.${name}].map(i => ViewModel.mappings.${viewModel.properties[name].fetch.many}.toViewModel(i))`;
 					}
 				} else {
-					if (viewModel.properties[name].type == "boolean") {
-						return `item.${name} = !!data.${name} : undefined;`;
+					if (viewModel.properties[name].propertyType == "boolean") {
+						return `item.${name} = !!data.${name}`;
 					}
 
-					if (viewModel.properties[name].type == "string") {
-						return `item.${name} = \`\${ata.${name}}\`;`;
+					if (viewModel.properties[name].propertyType == "string") {
+						return `item.${name} = \`\${data.${name}}\``;
 					}
 
-					if (viewModel.properties[name].type == "number") {
-						return `item.${name} = +data.${name};`;
+					if (viewModel.properties[name].propertyType == "number") {
+						return `item.${name} = +data.${name}`;
 					}
 
-					if (viewModel.properties[name].type == "date") {
-						return `item.${name} = new Date(data.${name});`;
+					if (viewModel.properties[name].propertyType == "date") {
+						return `item.${name} = new Date(data.${name})`;
 					}
 				}
 			})()});`).join("\n\t\t\t")}
