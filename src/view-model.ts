@@ -9,7 +9,7 @@ export class ViewModel<TModel> implements JSONResolvable {
 	constructor(private source: TModel) {}
 
 	async toModel() {
-		return ViewModel.mappings[this.constructor.name].toModel(this);
+		return await ViewModel.mappings[this.constructor.name].toModel(this);
 	}
 
 	static async from(data: any[] | Queryable<any, any>): Promise<UnknownFromResult> {
