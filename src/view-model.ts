@@ -88,7 +88,7 @@ export class ViewModel<TModel> implements JSONResolvable {
 		// this not not recursive for performance and maintanance reasons
 		// a viewmodel should NOT contain an object which cannot be resolved to JSON using "resolveToJSON"
 		for (let property in mapped) {
-			if (typeof mapped[property] == "object" && "resolveToJSON" in mapped[property]) {
+			if (typeof mapped[property] == "object" && mapped[property] && "resolveToJSON" in mapped[property]) {
 				mapped[property] = await mapped[property].resolveToJSON();
 			} else if (Array.isArray(mapped[property])) {
 				for (let i = 0; i < mapped[property].length; i++) {
