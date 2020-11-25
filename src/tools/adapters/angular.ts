@@ -36,7 +36,7 @@ export class ${controller.name} {
 			
 			if ("data" in r) {
 				return r.data as ${route.returnType.slice(0, route.returnType.length - 1).map(t => `${t}<`)}${route.returnType[route.returnType.length - 1]}${">".repeat(route.returnType.length - 1)};
-			} else {
+			} else if ("error" in r) {
 				throw new Error(r.error);
 			}
 			
