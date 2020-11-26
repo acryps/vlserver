@@ -397,15 +397,15 @@ ViewModel.mappings = {
 					}
 
 					if (viewModel.properties[name].propertyType == "string") {
-						return `item.${name} = \`\${data.${name}}\``;
+						return `item.${name} = data.${name} === null ? \`\${data.${name}}\` : null`;
 					}
 
 					if (viewModel.properties[name].propertyType == "number") {
-						return `item.${name} = +data.${name}`;
+						return `item.${name} = data.${name} === null ? +data.${name} : null`;
 					}
 
 					if (viewModel.properties[name].propertyType == "Date") {
-						return `item.${name} = new Date(data.${name})`;
+						return `item.${name} = data.${name} === null ? new Date(data.${name}) : null`;
 					}
 				}
 			})()});`).join("\n\t\t\t")}
