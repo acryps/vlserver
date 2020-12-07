@@ -26,7 +26,7 @@ export class ${viewModel.name} {
 				if (viewModel.properties[name].fetch.single) {
 					return `item.${name} = raw.${name} ? null : ${viewModel.properties[name].fetch.single}["$build"](raw.${name})`;
 				} else {
-					return `item.${name} = raw.${name} ? null : raw.${name}.map(i => ${viewModel.properties[name].fetch.single}["$build"](i))`;
+					return `item.${name} = raw.${name} ? null : raw.${name}.map(i => ${viewModel.properties[name].fetch.many}["$build"](i))`;
 				}
 			} else {
 				if (viewModel.properties[name].propertyType == "boolean") {
@@ -89,7 +89,7 @@ export class ${controller.name} {
 					} else if (type == "Date") {
 						return "d === null ? null : new Date(d)";
 					} else {
-						return `d === null ? null : ${type}["$build"](d)"`;
+						return `d === null ? null : ${type}["$build"](d)`;
 					} 
 				})()}${")".repeat(route.returnType.length - 1)};
 			} else if ("error" in r) {
