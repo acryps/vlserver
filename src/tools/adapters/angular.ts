@@ -52,6 +52,7 @@ export class ${viewModel.name} {
 }
 `.trim()).join("\n\n")}
 
+
 ${controllers.map(controller => `
 @Injectable()
 export class ${controller.name} {
@@ -70,25 +71,23 @@ export class ${controller.name} {
 			if ("data" in r) {
 				const d = r.data;
 
-				return ${route.returnType.slice(0, route.returnType.length - 1).map(t => `d.map(d => `)}${(() => {
+				return${route.returnType.slice(0, route.returnType.length - 1).map(t => `d.map(d => `)}${(() => {
 					const type = route.returnType[route.returnType.length - 1];
 
-					if (type == "boolean") {
-						return "!!d";
+					if (type == "void") {
+						return "";
+					} else if (type == "boolean") {
+						return " !!d";
 					} else if (type == "string") {
-						return "d === null ? null : `${d}`";
+						return " d === null ? null : `${d}`";
 					} else if (type == "number") {
-						return "d === null ? null : +d";
+						return " d === null ? null : +d";
 					} else if (type == "Date") {
-						return "d === null ? null : new Date(d)";
+						return " d === null ? null : new Date(d)";
 					} else {
-						return `${type}["$build"](d)`;
+						return ` d === null ? null : ${type}["$build"](d)";
 					} 
-				})()}${")".repeat(route.returnType.length - 1)}
-
-				r.data.map(i => i.map())
-
-				return r.data as ${route.returnType.slice(0, route.returnType.length - 1).map(t => `${t}<`)}${route.returnType[route.returnType.length - 1]}${">".repeat(route.returnType.length - 1)};
+				})()}${")".repeat(route.returnType.length - 1)};
 			} else if ("error" in r) {
 				throw new Error(r.error);
 			}
