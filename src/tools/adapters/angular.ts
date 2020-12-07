@@ -24,9 +24,9 @@ export class ${viewModel.name} {
 
 			if (viewModel.properties[name].fetch) {
 				if (viewModel.properties[name].fetch.single) {
-					return `item.${name} = raw.${name} ? null : ${viewModel.properties[name].fetch.single}["$build"](raw.${name})`;
+					return `item.${name} = raw.${name} ? ${viewModel.properties[name].fetch.single}["$build"](raw.${name}) : null`;
 				} else {
-					return `item.${name} = raw.${name} ? null : raw.${name}.map(i => ${viewModel.properties[name].fetch.many}["$build"](i))`;
+					return `item.${name} = raw.${name} ? raw.${name}.map(i => ${viewModel.properties[name].fetch.many}["$build"](i)) : null`;
 				}
 			} else {
 				if (viewModel.properties[name].propertyType == "boolean") {
