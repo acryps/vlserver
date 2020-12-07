@@ -443,15 +443,15 @@ ViewModel.mappings = {
 					}
 
 					if (viewModel.properties[name].propertyType == "string") {
-						return `model.${name} = viewModel.${name} === null ? null : \`\${data.${name}}\``;
+						return `model.${name} = viewModel.${name} === null ? null : \`\${viewModel.${name}}\``;
 					}
 
 					if (viewModel.properties[name].propertyType == "number") {
-						return `model.${name} = viewModel.${name} === null ? null : +data.${name}`;
+						return `model.${name} = viewModel.${name} === null ? null : +viewModel.${name}`;
 					}
 
 					if (viewModel.properties[name].propertyType == "Date") {
-						return `model.${name} = viewModel.${name} === null ? null : new Date(data.${name})`;
+						return `model.${name} = viewModel.${name} === null ? null : new Date(viewModel.${name})`;
 					}
 				}
 			})()});`).join("\n\t\t\t")}
