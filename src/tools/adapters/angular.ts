@@ -42,7 +42,7 @@ export class ${viewModel.name} {
 				}
 
 				if (viewModel.properties[name].propertyType == "Date") {
-					return `item.${name} = raw.${name} ? new Date(raw.${name})`;
+					return `item.${name} = raw.${name} ? new Date(raw.${name}) : null`;
 				}
 			}
 		}).join("\n\t\t")}
