@@ -10,6 +10,10 @@ export class NodeServiceAdapter extends ServiceAdapter {
 import { fetch } from "node-fetch";
 import FormData = require("form-data");
 
+export class Service {
+    static baseUrl = "";
+}
+
 ${viewModels.map(viewModel => `
 export class ${viewModel.name} {
 	${Object.keys(viewModel.properties).map(name => {
@@ -62,7 +66,7 @@ export class ${controller.name} {
 		const data = new FormData();
 		${route.parameters.map(parameter => `data.append(${JSON.stringify(parameter.id)}, JSON.stringify(${parameter.name}))`)}
 
-		return await fetch(${JSON.stringify(route.id)}, {
+		return await fetch(\`\${Service.baseUrl}${route.id}\`, {
 			method: "post",
 			body: data
 		}).then(res => res.json()).then(r => {
