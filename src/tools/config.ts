@@ -3,6 +3,7 @@ import path = require("path");
 import { NativeServiceAdapter } from "./adapters/native";
 import { ServiceAdapter } from "./adapters/base";
 import { AngularServiceAdapter } from "./adapters/angular";
+import { NodeServiceAdapter } from "./adapters/node";
 
 let rootFolder = process.cwd();
 
@@ -31,6 +32,10 @@ export const config = {
 
 			if (item.type == "angular") {
 				return new AngularServiceAdapter(item);
+			}
+
+			if (item.type == "node") {
+				return new NodeServiceAdapter(item);
 			}
 
 			return new ServiceAdapter(item);
