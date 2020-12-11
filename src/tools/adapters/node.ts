@@ -8,7 +8,7 @@ export class NodeServiceAdapter extends ServiceAdapter {
 		fs.writeFileSync(this.outFile, `
 
 import { fetch } from "node-fetch";
-import { FormData } from "form-data";
+import FormData = require("form-data");
 
 ${viewModels.map(viewModel => `
 export class ${viewModel.name} {
