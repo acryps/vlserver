@@ -7,7 +7,7 @@ export class NodeServiceAdapter extends ServiceAdapter {
 
 		fs.writeFileSync(this.outFile, `
 
-import { fetch } from "node-fetch";
+import fetch = require("node-fetch");
 import FormData = require("form-data");
 
 export class Service {
