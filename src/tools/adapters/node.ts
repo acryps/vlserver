@@ -101,7 +101,6 @@ export class ${controller.name} {
 				})()}${")".repeat(route.returnType.length - 1)});
 				`.trim()}
 			});
-			`).trim()}
 		});
 	}
 	
