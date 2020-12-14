@@ -76,9 +76,6 @@ export class ${controller.name} {
 
 		return await fetch(\`\${Service.baseUrl}${route.id}\`, {
 			method: "post",
-			headers: {
-				"content-type": "multipart/form-data"
-			},
 			body: data
 		}).then(res => res.json()).then(r => {
 			${((!route.returnType.length || route.returnType[0] == "void") ? `
