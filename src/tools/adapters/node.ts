@@ -105,7 +105,7 @@ export class ${controller.name} {
 					} 
 				})()}${")".repeat(route.returnType.length - 1)};
 			} else if ("error" in r) {
-				throw new Error(r.error);
+				throw new Error(\`\${r.error}\n\${r.stack}\`);
 			}
 			
 			`).trim()}
