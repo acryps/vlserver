@@ -81,7 +81,7 @@ export class ${controller.name} {
 			${((!route.returnType.length || route.returnType[0] == "void") ? `
 			
 			if ("error" in r) {
-				throw new Error(r.error);
+				throw new Error(\`\${r.error}\n\${r.stack}\`);
 			}
 			
 			` : `
