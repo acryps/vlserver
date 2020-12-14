@@ -7,6 +7,7 @@ export class NodeServiceAdapter extends ServiceAdapter {
 
 		fs.writeFileSync(this.outFile, `
 
+import fetch = require("node-fetch");
 import FormData = require("form-data");
 
 export class Service {
@@ -69,22 +70,29 @@ export class ${controller.name} {
         ">".repeat(route.returnType.length - 1)
     }> {
 		const data = new FormData();
-		${route.parameters.map(parameter => `data.append(${JSON.stringify(parameter.id)}, JSON.stringify(${parameter.name}))`).join("\n\t\t")}
+		${route.parameters.map(
+			parameter => `${parameter.name} !== undefined && data.append(${JSON.stringify(parameter.id)}, JSON.stringify(${parameter.name}))`
+		).join("\n\t\t")}
 
-		return new Promise(done => {
-			data.submit(\`\${Service.baseUrl}${route.id}\`, (error, result) => {
-				if (error) {
-					throw error;
-				}
+		return await fetch(\`\${Service.baseUrl}${route.id}\`, {
+			method: "post",
+			headers: {
+				"content-type": "multipart/form-data"
+			},
+			body: data
+		}).then(res => res.json()).then(r => {
+			${((!route.returnType.length || route.returnType[0] == "void") ? `
+			
+			if ("error" in r) {
+				throw new Error(r.error);
+			}
+			
+			` : `
 
-				if ("error" in r) {
-					throw new Error(r.error);
-				}
-
-				${route.returnType[0] == "void" ? "done()" : `
+			if ("data" in r) {
 				const d = r.data;
 
-				done(${route.returnType.slice(0, route.returnType.length - 1).map(t => `d.map(d => `)}${(() => {
+				return ${route.returnType.slice(0, route.returnType.length - 1).map(t => `d.map(d => `)}${(() => {
 					const type = route.returnType[route.returnType.length - 1];
 
 					if (type == "boolean") {
@@ -98,9 +106,12 @@ export class ${controller.name} {
 					} else {
 						return `d === null ? null : ${type}["$build"](d)`;
 					} 
-				})()}${")".repeat(route.returnType.length - 1)});
-				`.trim()}
-			});
+				})()}${")".repeat(route.returnType.length - 1)};
+			} else if ("error" in r) {
+				throw new Error(r.error);
+			}
+			
+			`).trim()}
 		});
 	}
 	
