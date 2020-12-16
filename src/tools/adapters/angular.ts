@@ -58,7 +58,13 @@ ${controllers.map(controller => `
 export class ${controller.name} {
 	${routes.filter(r => r.controller == controller).map(route => `
 	
-	async ${route.name}(${route.parameters.map(parameter => `${parameter.name}: ${parameter.type}${parameter.isArray ? "[]" : ""}`)}) {
+	async ${route.name}(${route.parameters.map(parameter => `${parameter.name}: ${parameter.type}${parameter.isArray ? "[]" : ""}`)}): Promise<${
+        route.returnType.slice(0, route.returnType.length - 1).map(t => `Array<`)
+    }${
+        route.returnType[route.returnType.length - 1]
+    }${
+        ">".repeat(route.returnType.length - 1)
+    }> {
 		const data = new FormData();
 		${route.parameters.map(parameter => `data.append(${JSON.stringify(parameter.id)}, JSON.stringify(${parameter.name}))`)}
 
