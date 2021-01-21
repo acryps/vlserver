@@ -30,6 +30,12 @@ export class BaseServer {
 		return null;
 	}
 
+	createInjector(context: RunContext) {
+		return new Inject({
+			DbContext: this.createDatabaseContext(context)
+		});
+	}
+
 	databaseContext: new (context: RunContext) => any | any;
 	modules: [];
 
@@ -70,9 +76,7 @@ export class BaseServer {
 			const context = this.createRunContext(req, res);
 
 			// create injector with DbContext global
-			const injector = new Inject({
-				DbContext: this.createDatabaseContext(context)
-			});
+			const injector = this.createInjector(context); 
 
 			try {
 				const body = req.body;
