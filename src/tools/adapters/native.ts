@@ -50,6 +50,13 @@ export class ${viewModel.name} {
 }
 `.trim()).join("\n\n")}
 
+export class Service {
+	static baseUrl = "";
+
+	static toURL(request) {
+		return \`\${this.baseUrl}\${request}\`;
+	}
+}
 
 ${controllers.map(controller => `
 export class ${controller.name} {
@@ -65,7 +72,7 @@ export class ${controller.name} {
 		const data = new FormData();
 		${route.parameters.map(parameter => `data.append(${JSON.stringify(parameter.id)}, JSON.stringify(${parameter.name}))`)}
 
-		return await fetch(${JSON.stringify(route.id)}, {
+		return await fetch(Service.toURL(${JSON.stringify(route.id)}), {
 			method: "post",
 			body: data
 		}).then(res => res.json()).then(r => {
