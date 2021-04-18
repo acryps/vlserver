@@ -78,6 +78,11 @@ export class BaseServer {
 			// create injector with DbContext global
 			const injector = this.createInjector(context); 
 
+			// will be constructed
+			// scoped here to call onerror in case request fails
+			let controller;
+			let request;
+
 			try {
 				const body = req.body;
 				const params = {};
@@ -133,9 +138,9 @@ export class BaseServer {
 					}
 				}
 
-				const controller = controllerConstructor(injector);
+				controller = controllerConstructor(injector);
 
-				const request = new ServiceRequest(controller, handler, params);
+				request = new ServiceRequest(controller, handler, params);
 				await request.execute();
 
 				if (request.aborted) {
@@ -171,6 +176,10 @@ export class BaseServer {
 				}
 			} catch (e) {
 				console.error(e);
+
+				if (controller && controller.onerror) {
+					await controller.onerror(request);
+				}
 
 				res.json({
 					error: e + "",

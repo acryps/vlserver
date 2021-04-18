@@ -1,5 +1,6 @@
 export class Service {
 	onrequest(request: ServiceRequest) {}
+	onerror(request: ServiceRequest) {}
 }
 
 export class ServiceRequest {

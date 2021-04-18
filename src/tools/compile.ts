@@ -75,7 +75,7 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 								}
 							}
 		
-							if (member.kind == ts.SyntaxKind.MethodDeclaration) {
+							if (member.kind == ts.SyntaxKind.MethodDeclaration && !(["onrequest", "onerror"].includes(member.name.escapedText))) {
 								let type = typeChecker.getSignatureFromDeclaration(member).getReturnType() as any;
 								let types = [type];
 
