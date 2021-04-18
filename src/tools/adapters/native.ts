@@ -74,6 +74,7 @@ export class ${controller.name} {
 
 		return await fetch(Service.toURL(${JSON.stringify(route.id)}), {
 			method: "post",
+			credentials: "include",
 			body: data
 		}).then(res => res.json()).then(r => {
 			${((!route.returnType.length || route.returnType[0] == "void") ? `
