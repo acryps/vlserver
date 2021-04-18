@@ -140,7 +140,7 @@ export class BaseServer {
 
 				controller = controllerConstructor(injector);
 
-				request = new ServiceRequest(controller, handler, params);
+				request = new ServiceRequest(req, controller, handler, params);
 				await request.execute();
 
 				if (request.aborted) {

@@ -4,7 +4,7 @@ export class Service {
 }
 
 export class ServiceRequest {
-	constructor(public controller: Service, public handler, public params) {}
+	constructor(public req, public controller: Service, public handler, public params) {}
 
 	aborted = false;
 	data;
