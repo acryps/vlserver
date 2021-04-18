@@ -81,6 +81,10 @@ export class ${controller.name} {
 			if ("error" in r) {
 				throw new Error(r.error);
 			}
+
+			if ("aborted" in r) {
+				throw new Error("request aborted by server");
+			}
 			
 			` : `
 
@@ -102,6 +106,8 @@ export class ${controller.name} {
 						return `d === null ? null : ${type}["$build"](d)`;
 					} 
 				})()}${")".repeat(route.returnType.length - 1)};
+			} else if ("aborted" in r) {
+				throw new Error("request aborted by server");
 			} else if ("error" in r) {
 				throw new Error(r.error);
 			}

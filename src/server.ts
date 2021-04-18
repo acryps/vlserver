@@ -1,6 +1,6 @@
 import * as express from "express";
 import { RunContext } from "vlquery";
-import { Inject, ViewModel } from ".";
+import { Inject, ViewModel, ServiceRequest } from ".";
 import { ServerModule } from "./module";
 import * as multer from "multer";
 
@@ -60,7 +60,7 @@ export class BaseServer {
 		});
 	}
 
-	expose(id: string, paramMappings: { [key: string]: any }, handler: (inject: Inject, params: any) => any) {
+	expose(id: string, paramMappings: { [key: string]: any }, controllerConstructor: (inject: Inject) => any, handler: (controller, params) => any) {
 		const fields = [];
 
 		for (let param in paramMappings) {
@@ -133,31 +133,42 @@ export class BaseServer {
 					}
 				}
 
-				let data = await handler(injector, params);
+				const controller = controllerConstructor(injector);
 
-				if (data && typeof data == "object" && "fetch" in data && typeof data.fetch == "function") {
-					data = await data.fetch();
-				}
+				const request = new ServiceRequest(controller, handler, params);
+				await request.execute();
 
-				if (data && typeof data == "object" && "toArray" in data && typeof data.toArray == "function") {
-					data = await data.toArray();
-				}
+				if (request.aborted) {
+					res.json({
+						aborted: true
+					});
+				} else {
+					let data = request.data;
 
-				if (data && typeof data == "object" && "resolveToJSON" in data && typeof data.resolveToJSON == "function") {
-					data = await data.resolveToJSON();
-				}
+					if (data && typeof data == "object" && "fetch" in data && typeof data.fetch == "function") {
+						data = await data.fetch();
+					}
 
-				if (data && Array.isArray(data)) {
-					for (let i = 0; i < data.length; i++) {
-						if (data[i] && typeof data[i] == "object" && "resolveToJSON" in data[i]) {
-							data[i] = await data[i].resolveToJSON();
+					if (data && typeof data == "object" && "toArray" in data && typeof data.toArray == "function") {
+						data = await data.toArray();
+					}
+
+					if (data && typeof data == "object" && "resolveToJSON" in data && typeof data.resolveToJSON == "function") {
+						data = await data.resolveToJSON();
+					}
+
+					if (data && Array.isArray(data)) {
+						for (let i = 0; i < data.length; i++) {
+							if (data[i] && typeof data[i] == "object" && "resolveToJSON" in data[i]) {
+								data[i] = await data[i].resolveToJSON();
+							}
 						}
 					}
-				}
 
-				res.json({
-					data
-				});
+					res.json({
+						data
+					});
+				}
 			} catch (e) {
 				console.error(e);
 

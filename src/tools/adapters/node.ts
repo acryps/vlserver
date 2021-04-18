@@ -79,6 +79,10 @@ export class ${controller.name} {
 			body: data
 		}).then(res => res.json()).then(r => {
 			${((!route.returnType.length || route.returnType[0] == "void") ? `
+
+			if ("aborted" in r) {
+				throw new Error("request aborted by server");
+			}
 			
 			if ("error" in r) {
 				throw new Error(\`\${r.error}\n\${r.stack}\`);
@@ -104,6 +108,8 @@ export class ${controller.name} {
 						return `d === null ? null : ${type}["$build"](d)`;
 					} 
 				})()}${")".repeat(route.returnType.length - 1)};
+			} else if ("aborted" in r) {
+				throw new Error("request aborted by server");
 			} else if ("error" in r) {
 				throw new Error(\`\${r.error}\n\${r.stack}\`);
 			}
