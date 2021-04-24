@@ -94,7 +94,13 @@ export class BaseServer {
 								if (paramMappings[paramKey].isArray) {
 									params[paramKey] = [...JSON.parse(body[paramKey])].map(s => `${s}`);
 								} else {
-									params[paramKey] = `${JSON.parse(body[paramKey])}`;
+									const value = JSON.parse(body[paramKey]);
+
+									if (value === null) {
+										params[paramKey] = null;
+									} else {
+										params[paramKey] = `${value}`;
+									}
 								}
 
 								break;
@@ -104,7 +110,13 @@ export class BaseServer {
 								if (paramMappings[paramKey].isArray) {
 									params[paramKey] = [...JSON.parse(body[paramKey])].map(s => +s);
 								} else {
-									params[paramKey] = +JSON.parse(body[paramKey]);
+									const value = JSON.parse(body[paramKey]);
+
+									if (value === null) {
+										params[paramKey] = null;
+									} else {
+										params[paramKey] = +value;
+									}
 								}
 
 								break;
@@ -124,7 +136,13 @@ export class BaseServer {
 								if (paramMappings[paramKey].isArray) {
 									params[paramKey] = [...JSON.parse(body[paramKey])].map(s => new Date(s));
 								} else {
-									params[paramKey] = new Date(JSON.parse(body[paramKey]));
+									const value = JSON.parse(body[paramKey]);
+
+									if (value === null) {
+										params[paramKey] = null;
+									} else {
+										params[paramKey] = new Date(value);
+									}
 								}
 
 								break;
