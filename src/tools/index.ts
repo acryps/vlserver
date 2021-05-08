@@ -5,7 +5,12 @@ const args = process.argv.slice(2);
 
 switch (args[0]) {
 	case "compile":
-		compileServices();
+		try {
+			compileServices();
+		} catch (e) {
+			console.error(e);
+			console.error(e.stack);
+		}
 
 		break;
 
