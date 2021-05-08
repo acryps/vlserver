@@ -52,7 +52,7 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 					};
 		
 					// check for Service inheritage
-					if (node.heritageClauses[0] && node.heritageClauses[0].types[0] && node.heritageClauses[0].types[0].expression.escapedText == "Service") {
+					if (node.heritageClauses && node.heritageClauses[0] && node.heritageClauses[0].types[0] && node.heritageClauses[0].types[0].expression.escapedText == "Service") {
 						for (let member of node.members) {
 							if (member.kind == ts.SyntaxKind.Constructor) {
 								injects[name] = [];
@@ -156,7 +156,7 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 						}
 					}
 
-					if (node.heritageClauses[0] && node.heritageClauses[0].types[0] && node.heritageClauses[0].types[0].expression.escapedText == "ViewModel") {
+					if (node.heritageClauses && node.heritageClauses[0] && node.heritageClauses[0].types[0] && node.heritageClauses[0].types[0].expression.escapedText == "ViewModel") {
 						const modelType = typeChecker.getTypeAtLocation(node.heritageClauses[0].types[0].typeArguments[0]);
 						const modelProperties = typeChecker.getTypeAtLocation(node.heritageClauses[0].types[0].typeArguments[0]).getProperties();
 						const baseViewModelProperties = typeChecker.getTypeAtLocation(node.heritageClauses[0].types[0]).getProperties();
