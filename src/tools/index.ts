@@ -9,7 +9,6 @@ switch (args[0]) {
 			compileServices();
 		} catch (e) {
 			console.error(e);
-			console.error(e.stack);
 		}
 
 		break;
