@@ -70,8 +70,6 @@ export class BaseServer {
 		}
 
 		this.app.post(`/${id}`, this.upload.fields(fields), async (req, res) => {
-			console.log(`request`);
-
 			// create run context
 			const context = this.createRunContext(req, res);
 
