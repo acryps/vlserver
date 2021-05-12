@@ -31,18 +31,14 @@ export class ${viewModel.name} {
 			} else {
 				if (viewModel.properties[name].propertyType == "boolean") {
 					return `item.${name} = !!raw.${name}`;
-				}
-
-				if (viewModel.properties[name].propertyType == "string") {
+				} else if (viewModel.properties[name].propertyType == "string") {
 					return `item.${name} = raw.${name} === null ? null : \`\${raw.${name}}\``;
-				}
-
-				if (viewModel.properties[name].propertyType == "number") {
+				} else if (viewModel.properties[name].propertyType == "number") {
 					return `item.${name} = raw.${name} === null ? null : +raw.${name}`;
-				}
-
-				if (viewModel.properties[name].propertyType == "Date") {
+				} else if (viewModel.properties[name].propertyType == "Date") {
 					return `item.${name} = raw.${name} ? new Date(raw.${name}) : null`;
+				} else {
+					return `item.${name} = raw.${name} ? ${viewModel.properties[name].propertyType}["$build"](raw) : null`;
 				}
 			}
 		}).join("\n\t\t")}
