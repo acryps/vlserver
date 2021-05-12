@@ -43,7 +43,7 @@ export class ${viewModel.name} {
 				} else if (viewModel.properties[name].propertyType == "Date") {
 					return `item.${name} = raw.${name} ? new Date(raw.${name}) : null`;
 				} else {
-					return `item.${name} = raw.${name} ? ${viewModel.properties[name].propertyType}["$build"](raw) : null`;
+					return `item.${name} = raw.${name} ? ${viewModel.properties[name].propertyType}["$build"](raw.${name}) : null`;
 				}
 			}
 		}).join("\n\t\t")}
