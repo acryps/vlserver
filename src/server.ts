@@ -204,4 +204,12 @@ export class BaseServer {
 			} 
 		});
 	}
+
+	static async unwrap(value) {
+		if ("fetch" in value && value.fetch && typeof value.fetch == "function") {
+			return await value.fetch();
+		}
+
+		return value;
+	}
 }

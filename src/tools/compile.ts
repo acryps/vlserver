@@ -359,7 +359,7 @@ ViewModel.mappings = {
 					}
 
 					if (viewModel.properties[name].fetch.single) {
-						return `new ${viewModel.properties[name].fetch.single}(await this.model.${name}.fetch())`;
+						return `new ${viewModel.properties[name].fetch.single}(await BaseServer.unwrap(this.model.${name}))`;
 					}
 
 					if (viewModel.properties[name].fetch.many) {
