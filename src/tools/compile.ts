@@ -207,11 +207,13 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 										}
 									}
 								} else {
+									const type = typeChecker.typeToString(viewModelPropertyType);
+									
 									properties[property.escapedName.toString()] = {
 										name: property.escapedName,
-										propertyType: typeChecker.typeToString(modelPropertyType),
+										propertyType: "symbol" in viewModelPropertyType && type != "any" ? type : typeChecker.typeToString(modelPropertyType),
 										type: convertToStoredType(typeChecker.typeToString(modelPropertyType))
-									}
+									};
 								}
 							}
 						}
