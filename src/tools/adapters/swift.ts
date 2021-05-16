@@ -24,10 +24,10 @@ export class SwiftServiceAdapter extends ServiceAdapter {
 import Foundation
 
 class Service {
-	var baseUrl = ""
+	static var baseUrl = ""
 	
 	func toURL(route: String) -> String {
-		return "\\(baseUrl)\\(route)"
+		return "\\(Service.baseUrl)\\(route)"
 	}
 }
 
