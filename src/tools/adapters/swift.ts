@@ -71,19 +71,22 @@ class ${viewModel.name} : Codable {
 ${controllers.map(controller => `
 
 class ${controller.name} : Service {
-	${routes.filter(r => r.controller == controller).map(route => `
+	${routes.filter(r => r.controller == controller).map(route => {
+		const isVoid = route.returnType[route.returnType.length - 1] == "void";
+
+		return `
 
 	func ${route.name}(${[
 		...route.parameters.map(
 			parameter => `${parameter.name}: ${parameter.isArray ? "[" : ""}${this.typeMappings[parameter.type] || parameter.type}${parameter.isArray ? "]" : ""}`
 		),
-		`completionHandler: @escaping (Error?, ${
+		`completionHandler: @escaping (Error?${isVoid ? "" : `, ${
 			route.returnType.slice(0, route.returnType.length - 1).map(t => `[`)
 		}${
 			route.returnType[route.returnType.length - 1]
 		}?${
 			"]?".repeat(route.returnType.length - 1)
-		}) -> Void`
+		}`}) -> Void`
 	].join(", ")}) {
 		let endpoint = URL(string: toURL(route: ${JSON.stringify(route.id)}))
 		var request = URLRequest(url: endpoint!)
@@ -99,7 +102,7 @@ class ${controller.name} : Service {
 		
 		let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
 			if error != nil {
-				completionHandler(error, nil)
+				completionHandler(error${isVoid ? "" : ", nil"})
 				
 				return
 			}
@@ -110,7 +113,7 @@ class ${controller.name} : Service {
 				if res["data"] != nil {
 					let result = res["data"]
 
-					completionHandler(nil, ${route.returnType.slice(0, route.returnType.length - 1).map(t => `(result as! [Any?]).map({ result in return `)}${(() => {
+					completionHandler(nil${isVoid ? "" : `, ${route.returnType.slice(0, route.returnType.length - 1).map(t => `(result as! [Any?]).map({ result in return `)}${(() => {
 						const type = route.returnType[route.returnType.length - 1];
 	
 						if (type == "boolean") {
@@ -124,20 +127,21 @@ class ${controller.name} : Service {
 						} else {
 							return `result == nil ? nil : try! JSONDecoder().decode(${type}.self, from: result as! Data)`
 						} 
-					})()}${"})".repeat(route.returnType.length - 1)})
+					})()}${"})".repeat(route.returnType.length - 1)}`})
 				} else if res["aborted"] != nil {
 					throw ServiceError(message: "request aborted by server")
 				} else if res["error"] != nil {
 					throw ServiceError(message: res["error"] as! String)
 				}
 			} catch let error {
-				completionHandler(error, nil)
+				completionHandler(error${isVoid ? "" : ", nil"})
 			}
 		}
 		
 		task.resume()
 	}
-	`.trim()).join("\n\n\t")}
+		`.trim()
+	}).join("\n\n\t")}
 }
 `.trim()).join("\n\n")}`.trim());
 	}
