@@ -4,6 +4,7 @@ import { NativeServiceAdapter } from "./adapters/native";
 import { ServiceAdapter } from "./adapters/base";
 import { AngularServiceAdapter } from "./adapters/angular";
 import { NodeServiceAdapter } from "./adapters/node";
+import { SwiftServiceAdapter } from "./adapters/swift";
 
 let rootFolder = process.cwd();
 
@@ -26,19 +27,12 @@ export const config = {
 		serverOutFile: (userConfig.services && userConfig.services.serverOutFile) || "server.ts",
 		scan: (userConfig.services && userConfig.services.scan) || ["."],
 		endpoints: ((userConfig.services && userConfig.services.endpoints) || []).map(item => {
-			if (item.type == "native") {
-				return new NativeServiceAdapter(item);
-			}
-
-			if (item.type == "angular") {
-				return new AngularServiceAdapter(item);
-			}
-
-			if (item.type == "node") {
-				return new NodeServiceAdapter(item);
-			}
-
-			return new ServiceAdapter(item);
+			return {
+				native: new NativeServiceAdapter(item),
+				angular: new AngularServiceAdapter(item),
+				node: new NodeServiceAdapter(item),
+				swift: new SwiftServiceAdapter(item)
+			}[item.type];
 		})
 	}
 };
