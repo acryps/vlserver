@@ -135,7 +135,7 @@ class ${controller.name} : Service {
 						} else {
 							return `result == nil ? nil : try! JSONDecoder().decode(${type}.self, from: result as! Data)`
 						} 
-					})()}${"})".repeat(route.returnType.length - 1)}`})
+					})()}${"})".repeat(route.returnType.length - 1)})`}
 				} else if res["aborted"] != nil {
 					throw ServiceError(message: "request aborted by server")
 				} else if res["error"] != nil {
