@@ -116,7 +116,7 @@ class ${controller.name} : Service {
 			}
 			
 			do {
-				let res = try! JSONSerialization.jsonObject(with: data!, options: []) as! [String: Any]
+				let res = try JSONSerialization.jsonObject(with: data!, options: []) as! [String: Any]
 				
 				if res["data"] != nil {
 					${isVoid ? "completionHandler(nil)" : `let result = res["data"]
