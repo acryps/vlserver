@@ -82,7 +82,7 @@ class ${controller.name} : Service {
 		}${
 			route.returnType[route.returnType.length - 1]
 		}?${
-			"]".repeat(route.returnType.length - 1)
+			"]?".repeat(route.returnType.length - 1)
 		}) -> Void`
 	].join(", ")}) {
 		let endpoint = URL(string: toURL(route: ${JSON.stringify(route.id)}))
@@ -110,7 +110,7 @@ class ${controller.name} : Service {
 				if res["data"] != nil {
 					let result = res["data"]
 
-					completionHandler(nil, ${route.returnType.slice(0, route.returnType.length - 1).map(t => `(result as! [Any]).map({ result in return `)}${(() => {
+					completionHandler(nil, ${route.returnType.slice(0, route.returnType.length - 1).map(t => `(result as! [Any?]).map({ result in return `)}${(() => {
 						const type = route.returnType[route.returnType.length - 1];
 	
 						if (type == "boolean") {
@@ -122,7 +122,7 @@ class ${controller.name} : Service {
 						} else if (type == "Date") {
 							return "result == nil ? nil : result as! ISO8601DateFormatter().date(from: result)"
 						} else {
-							return `result == nil ? nil : JSONDecoder().decode(${type}, from: result as! Data)`
+							return `result == nil ? nil : try! JSONDecoder().decode(${type}.self, from: result as! Data)`
 						} 
 					})()}${"})".repeat(route.returnType.length - 1)})
 				} else if res["aborted"] != nil {
