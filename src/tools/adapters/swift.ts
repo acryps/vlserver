@@ -34,7 +34,7 @@ class RequestBody {
 	}
 
 	var header: String {
-		return "multipart/form-data; boundary=----\\(body.boundary)"
+		return "multipart/form-data; boundary=----\\(boundary)"
 	}
 	
 	func append(name: String, data: Data) {
@@ -58,7 +58,7 @@ class ServiceError : Error {
 }
 
 ${viewModels.map(viewModel => `
-class ${viewModel.name} : Codeable {
+class ${viewModel.name} : Codable {
 	${Object.keys(viewModel.properties).map(name => {
 		const property = viewModel.properties[name];
 		const isArray = property.fetch && property.fetch.many;
