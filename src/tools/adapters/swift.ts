@@ -46,14 +46,14 @@ class RequestBody {
 	}
 	
 	func append(name: String, data: Data) {
-		body.append("------\(boundary)\r\n".data(using: .ascii)!)
-		body.append("Content-Disposition: form-data; name=\"\(name)\"\r\n\r\n".data(using: .ascii)!)
+		body.append("------\\(boundary)\\r\\n".data(using: .ascii)!)
+		body.append("Content-Disposition: form-data; name=\\"\\(name)\\"\\r\\n\\r\\n".data(using: .ascii)!)
 		body.append(data)
-		body.append("\r\n".data(using: .ascii)!)
+		body.append("\\r\\n".data(using: .ascii)!)
 	}
 	
 	func create() -> Data {
-		body.append("------\(boundary)--".data(using: .ascii)!)
+		body.append("------\\(boundary)--".data(using: .ascii)!)
 		
 		print(String(data: body as! Data, encoding: .ascii)!)
 		
