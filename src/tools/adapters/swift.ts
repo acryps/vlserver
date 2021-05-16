@@ -81,9 +81,9 @@ class ${controller.name} : Service {
 			route.returnType.slice(0, route.returnType.length - 1).map(t => `[`)
 		}${
 			route.returnType[route.returnType.length - 1]
-		}${
+		}?${
 			"]".repeat(route.returnType.length - 1)
-		}?) -> Void`
+		}) -> Void`
 	].join(", ")}) {
 		let endpoint = URL(string: toURL(route: ${JSON.stringify(route.id)}))
 		var request = URLRequest(url: endpoint!)
@@ -137,10 +137,8 @@ class ${controller.name} : Service {
 		
 		task.resume()
 	}
+	`.trim()).join("\n\n\t")}
 }
-
-`.trim()).join("\n\n\t")}
-	}
 `.trim()).join("\n\n")}`.trim());
 	}
 }
