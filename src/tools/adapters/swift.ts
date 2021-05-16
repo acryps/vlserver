@@ -9,6 +9,14 @@ export class SwiftServiceAdapter extends ServiceAdapter {
 		Date: "Date"
 	}
 
+	getType(type) {
+		if (type in this.typeMappings) {
+			return this.typeMappings[type];
+		}
+		
+		return type;
+	}
+
 	generate(routes, viewModels, config) {
 		const controllers = routes.map(r => r.controller).filter((c, i, a) => a.indexOf(c) == i);
 
@@ -63,7 +71,7 @@ class ${viewModel.name} : Codable {
 		const property = viewModel.properties[name];
 		const isArray = property.fetch && property.fetch.many;
 
-		return `var ${name}: ${isArray ? "[" : ""}${this.typeMappings[property.propertyType] || property.propertyType}${isArray ? "]" : ""};`;
+		return `var ${name}: ${isArray ? "[" : ""}${this.getType(property.propertyType)}${isArray ? "]" : ""};`;
 	}).join("\n\t")}
 }
 `.trim()).join("\n\n")}
@@ -78,12 +86,12 @@ class ${controller.name} : Service {
 
 	func ${route.name}(${[
 		...route.parameters.map(
-			parameter => `${parameter.name}: ${parameter.isArray ? "[" : ""}${this.typeMappings[parameter.type] || parameter.type}${parameter.isArray ? "]" : ""}`
+			parameter => `${parameter.name}: ${parameter.isArray ? "[" : ""}${this.getType(parameter.type)}${parameter.isArray ? "]" : ""}`
 		),
 		`completionHandler: @escaping (Error?${isVoid ? "" : `, ${
 			route.returnType.slice(0, route.returnType.length - 1).map(t => `[`)
 		}${
-			route.returnType[route.returnType.length - 1]
+			this.getType(route.returnType[route.returnType.length - 1])
 		}?${
 			"]?".repeat(route.returnType.length - 1)
 		}`}) -> Void`
@@ -111,9 +119,9 @@ class ${controller.name} : Service {
 				let res = try! JSONSerialization.jsonObject(with: data!, options: []) as! [String: Any]
 				
 				if res["data"] != nil {
-					let result = res["data"]
+					${isVoid ? "completionHandler(nil)" : `let result = res["data"]
 
-					completionHandler(nil${isVoid ? "" : `, ${route.returnType.slice(0, route.returnType.length - 1).map(t => `(result as! [Any?]).map({ result in return `)}${(() => {
+					completionHandler(nil, ${route.returnType.slice(0, route.returnType.length - 1).map(t => `(result as! [Any?]).map({ result in return `)}${(() => {
 						const type = route.returnType[route.returnType.length - 1];
 	
 						if (type == "boolean") {
