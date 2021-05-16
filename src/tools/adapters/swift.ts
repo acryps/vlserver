@@ -57,6 +57,17 @@ class ServiceError : Error {
 	}
 }
 
+${viewModels.map(viewModel => `
+class ${viewModel.name} : Codeable {
+	${Object.keys(viewModel.properties).map(name => {
+		const property = viewModel.properties[name];
+		const isArray = property.fetch && property.fetch.many;
+
+		return `var ${name}: ${isArray ? "[" : ""}${this.typeMappings[property.propertyType] || property.propertyType}${isArray ? "]" : ""};`;
+	}).join("\n\t")}
+}
+`.trim()).join("\n\n")}
+
 ${controllers.map(controller => `
 
 class ${controller.name} : Service {
