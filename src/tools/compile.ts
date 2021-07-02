@@ -220,7 +220,7 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 
 									properties[property.escapedName.toString()] = {
 										name: property.escapedName,
-										propertyType: modelPropertyType.symbol.escapedName.toString(),
+										propertyType: `keyof typeof ${modelPropertyType.symbol.escapedName.toString()}`,
 										type: modelPropertyType.symbol.escapedName.toString()
 									};
 								} else {

@@ -9,6 +9,10 @@ export class NativeServiceAdapter extends ServiceAdapter {
 
 ${Object.keys(enums).map(name => `export class ${name} {
 	${Object.keys(enums[name]).map(prop => `static readonly ${prop} = ${JSON.stringify(enums[name][prop])};`).join("\n\t")}
+
+	$build(name) {
+		return name;
+	}
 }`).join("\n\n")}
 
 ${viewModels.map(viewModel => `
