@@ -32,9 +32,9 @@ export class ViewModel<TModel> implements JSONResolvable {
 		const firstModel = sources[0] as any;
 
 		// check if the data is a database entity
-		if ("$meta" in firstModel && "id" in firstModel) {
+		if ("$$meta" in firstModel && "id" in firstModel) {
 			const mapping = ViewModel.mappings[this.name].items;
-			const set = firstModel.$meta.set as DbSet<Entity<QueryProxy>, QueryProxy>;
+			const set = firstModel.$$meta.set as DbSet<Entity<QueryProxy>, QueryProxy>;
 			const ids = sources.map(s => (s as unknown as Entity<QueryProxy>).id);
 
 			// create include tree
