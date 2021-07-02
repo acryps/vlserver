@@ -2,7 +2,7 @@ import * as fs from "fs";
 import { ServiceAdapter } from "./base";
 
 export class NodeServiceAdapter extends ServiceAdapter {
-	generate(routes, viewModels, config) {
+	generate(routes, viewModels, config, enums) {
 		const controllers = routes.map(r => r.controller).filter((c, i, a) => a.indexOf(c) == i);
 
 		fs.writeFileSync(this.outFile, `
@@ -13,6 +13,10 @@ import FormData = require("form-data");
 export class Service {
     static baseUrl = "";
 }
+
+${Object.keys(enums).map(name => `export class ${name} {
+	${Object.keys(enums[name]).map(prop => `static readonly ${prop} = ${JSON.stringify(enums[name][prop])};`).join("\n\t")}
+}`).join("\n\n")}
 
 ${viewModels.map(viewModel => `
 export class ${viewModel.name} {
@@ -42,6 +46,8 @@ export class ${viewModel.name} {
 					return `item.${name} = raw.${name} === null ? null : +raw.${name}`;
 				} else if (viewModel.properties[name].propertyType == "Date") {
 					return `item.${name} = raw.${name} ? new Date(raw.${name}) : null`;
+				} else if (viewModel.properties[name].enum) {
+					return `item.${name} = raw.${name}`;
 				} else {
 					return `item.${name} = raw.${name} ? ${viewModel.properties[name].propertyType}["$build"](raw.${name}) : null`;
 				}

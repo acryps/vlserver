@@ -9,10 +9,6 @@ export class NativeServiceAdapter extends ServiceAdapter {
 
 ${Object.keys(enums).map(name => `export class ${name} {
 	${Object.keys(enums[name]).map(prop => `static readonly ${prop} = ${JSON.stringify(enums[name][prop])};`).join("\n\t")}
-
-	$build(name) {
-		return name;
-	}
 }`).join("\n\n")}
 
 ${viewModels.map(viewModel => `
@@ -43,6 +39,8 @@ export class ${viewModel.name} {
 					return `item.${name} = raw.${name} === null ? null : +raw.${name}`;
 				} else if (viewModel.properties[name].propertyType == "Date") {
 					return `item.${name} = raw.${name} ? new Date(raw.${name}) : null`;
+				} else if (viewModel.properties[name].enum) {
+					return `item.${name} = raw.${name}`;
 				} else {
 					return `item.${name} = raw.${name} ? ${viewModel.properties[name].propertyType}["$build"](raw.${name}) : null`;
 				}
