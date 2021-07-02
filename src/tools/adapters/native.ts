@@ -2,12 +2,16 @@ import * as fs from "fs";
 import { ServiceAdapter } from "./base";
 
 export class NativeServiceAdapter extends ServiceAdapter {
-	generate(routes, viewModels, config) {
+	generate(routes, viewModels, config, enums) {
 		const controllers = routes.map(r => r.controller).filter((c, i, a) => a.indexOf(c) == i);
 
 		fs.writeFileSync(this.outFile, `
 
 ${viewModels.map(viewModel => `
+${Object.keys(enums).map(name => `export class ${name} {
+	${Object.keys(enums[name]).map(prop => `static readonly ${prop} = ${JSON.stringify(enums[name][prop])};`).join("\n\t")}
+}`).join("\n\n")}
+
 export class ${viewModel.name} {
 	${Object.keys(viewModel.properties).map(name => {
 		const property = viewModel.properties[name];

@@ -7,6 +7,7 @@ import { sha512 } from "js-sha512";
 let routes = [];
 const viewModels = [];
 const injects = {};
+const enums = {};
 
 function compile(path: string, root: string, program: ts.Program, typeChecker: ts.TypeChecker) {
 	const sourceFile = program.getSourceFile(path);
@@ -180,9 +181,6 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 
 								const modelPropertyName = (property.declarations[0] as any) && (property.declarations[0] as any).type && (property.declarations[0] as any).type.getText();
 
-								console.log(modelPropertyType?.symbol?.escapedName, modelPropertyType.getBaseTypes())
-								
-
 								if (modelPropertyName && modelPropertyName.startsWith("Partial<ForeignReference<")) {
 									properties[property.escapedName.toString()] = {
 										name: property.escapedName,
@@ -210,7 +208,15 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 										}
 									}
 								} else if (modelPropertyType.getBaseTypes()?.find(b => b.symbol.escapedName == "QueryEnum")) {
-									console.log("ENUM:::::: ", property.escapedName);
+									const values = {};
+
+									for (let [key, value] of modelPropertyType.symbol.exports as any) {
+                                        if (value.valueDeclaration) {
+                                            values[key] = value.valueDeclaration.initializer.text;
+                                        }
+                                    }
+
+									values[property.escapedName.toString()] = values;
 								} else {
 									const type = typeChecker.typeToString(viewModelPropertyType);
 									
@@ -472,7 +478,7 @@ ViewModel.mappings = {
 	`.trim());
 
 	for (let endpoint of config.services.endpoints) {
-		endpoint.generate(routes, viewModels, config);
+		endpoint.generate(routes, viewModels, config, enums);
 	}
 }
 

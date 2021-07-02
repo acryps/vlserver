@@ -2,7 +2,7 @@ import * as fs from "fs";
 import { ServiceAdapter } from "./base";
 
 export class AngularServiceAdapter extends ServiceAdapter {
-	generate(routes, viewModels, config) {
+	generate(routes, viewModels, config, enums) {
 		const controllers = routes.map(r => r.controller).filter((c, i, a) => a.indexOf(c) == i);
 
 		fs.writeFileSync(this.outFile, `

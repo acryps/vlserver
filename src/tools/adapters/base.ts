@@ -5,5 +5,5 @@ export class ServiceAdapter {
 		this.outFile = config.outFile;
 	}
 	
-	generate(routes, viewModels, config) {}
+	generate(routes, viewModels, config, enums) {}
 }
