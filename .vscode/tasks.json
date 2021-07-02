@@ -7,14 +7,14 @@
 			"label": "Publish @dev to npm",
 			"detail": "Publish vlquery@dev to npm",
 			"type": "shell",
-			"command": "npm version ${input:version-type} && npm install vlquery@dev && npm publish --tag dev",
+			"command": "npm version ${input:version-type} && npm publish --tag dev",
 			"problemMatcher": []
 		},
 		{
 			"label": "Publish @latest to npm",
 			"detail": "Publish vlquery@latest to npm",
 			"type": "shell",
-			"command": "npm version ${input:version-type} && npm install vlquery@dev && npm publish",
+			"command": "npm version ${input:version-type} && npm publish",
 			"problemMatcher": []
 		}
 	],
