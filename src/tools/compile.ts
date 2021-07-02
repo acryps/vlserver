@@ -180,7 +180,8 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 
 								const modelPropertyName = (property.declarations[0] as any) && (property.declarations[0] as any).type && (property.declarations[0] as any).type.getText();
 
-								console.log(modelPropertyType.getBaseTypes())
+								console.log(modelPropertyType.symbol.escapedName, modelPropertyType.getBaseTypes())
+								
 
 								if (modelPropertyName && modelPropertyName.startsWith("Partial<ForeignReference<")) {
 									properties[property.escapedName.toString()] = {
