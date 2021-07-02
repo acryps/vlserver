@@ -216,7 +216,13 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
                                         }
                                     }
 
-									values[property.escapedName.toString()] = values;
+									enums[modelPropertyType.symbol.escapedName.toString()] = values;
+
+									properties[property.escapedName.toString()] = {
+										name: property.escapedName,
+										propertyType: modelPropertyType.symbol.escapedName.toString(),
+										type: modelPropertyType.symbol.escapedName.toString()
+									};
 								} else {
 									const type = typeChecker.typeToString(viewModelPropertyType);
 									
