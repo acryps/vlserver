@@ -220,8 +220,9 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 
 									properties[property.escapedName.toString()] = {
 										name: property.escapedName,
-										propertyType: `keyof typeof ${modelPropertyType.symbol.escapedName.toString()}`,
-										type: modelPropertyType.symbol.escapedName.toString()
+										propertyType: modelPropertyType.symbol.escapedName.toString(),
+										type: modelPropertyType.symbol.escapedName.toString(),
+										enum: true
 									};
 								} else {
 									const type = typeChecker.typeToString(viewModelPropertyType);
