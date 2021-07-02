@@ -206,7 +206,7 @@ function compile(path: string, root: string, program: ts.Program, typeChecker: t
 											many: asViewModel
 										}
 									}
-								} else if (modelPropertyType.getBaseTypes().find(b => b.symbol.escapedName == "QueryEnum")) {
+								} else if (modelPropertyType.getBaseTypes()?.find(b => b.symbol.escapedName == "QueryEnum")) {
 									console.log("ENUM:::::: ", property.escapedName);
 								} else {
 									const type = typeChecker.typeToString(viewModelPropertyType);
