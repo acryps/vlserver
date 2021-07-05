@@ -88,7 +88,7 @@ export class BaseServer {
 				const params = {};
 
 				for (let paramKey in paramMappings) {
-					if (paramKey in body) {
+					if (paramKey in body || paramKey in files) {
 						switch (paramMappings[paramKey].type) {
 							case "string": {
 								if (paramMappings[paramKey].isArray) {
