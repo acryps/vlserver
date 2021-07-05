@@ -494,6 +494,7 @@ function convertToStoredType(type) {
 		"boolean": '"boolean"',
 		"string": '"string"',
 		"number": '"number"',
-		"Date": '"date"'
+		"Date": '"date"',
+		"Buffer": '"buffer"'
 	}[type] || type;
 }

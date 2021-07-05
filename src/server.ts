@@ -146,6 +146,14 @@ export class BaseServer {
 								break;
 							}
 
+							case "buffer": {
+								params[paramKey] = body[paramKey];
+
+								console.log(params[paramKey]);
+
+								break;
+							}
+
 							default: {
 								const ctr = paramMappings[paramKey].type;
 								params[paramKey] = ViewModel.mappings[ctr.name].toViewModel(JSON.parse(body[paramKey]));

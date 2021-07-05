@@ -73,7 +73,7 @@ export class ${controller.name} {
     }> {
 		const data = new FormData();
 		${route.parameters.map(
-			parameter => `${parameter.name} !== undefined && data.append(${JSON.stringify(parameter.id)}, JSON.stringify(${parameter.name}))`
+			parameter => `${parameter.name} !== undefined && data.append(${JSON.stringify(parameter.id)}, ${parameter.type == "Buffer" ? parameter.name : `JSON.stringify(${parameter.name})`}))`
 		).join("\n\t\t")}
 
 		return await fetch(\`\${Service.baseUrl}${route.id}\`, {
