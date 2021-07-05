@@ -64,7 +64,7 @@ ${controllers.map(controller => `
 export class ${controller.name} {
 	${routes.filter(r => r.controller == controller).map(route => `
 	
-	async ${route.name}(${route.parameters.map(parameter => `${parameter.name}: ${parameter.type}${parameter.isArray ? "[]" : ""}`)}): Promise<${
+	async ${route.name}(${route.parameters.map(parameter => `${parameter.name}: ${parameter.type}${parameter.isArray ? "[]" : ""}`).join(", ")}): Promise<${
         route.returnType.slice(0, route.returnType.length - 1).map(t => `Array<`)
     }${
         route.returnType[route.returnType.length - 1]

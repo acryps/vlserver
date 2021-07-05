@@ -64,7 +64,7 @@ ${controllers.map(controller => `
 export class ${controller.name} {
 	${routes.filter(r => r.controller == controller).map(route => `
 	
-	async ${route.name}(${route.parameters.map(parameter => `${parameter.name}: ${parameter.type}${parameter.isArray ? "[]" : ""}`)}): Promise<${
+	async ${route.name}(${route.parameters.map(parameter => `${parameter.name}: ${parameter.type == "Buffer" ? "Blob" : parameter.type}${parameter.isArray ? "[]" : ""}`).join(", ")}): Promise<${
         route.returnType.slice(0, route.returnType.length - 1).map(t => `Array<`)
     }${
         route.returnType[route.returnType.length - 1]
@@ -72,7 +72,7 @@ export class ${controller.name} {
         ">".repeat(route.returnType.length - 1)
     }> {
 		const data = new FormData();
-		${route.parameters.map(parameter => `data.append(${JSON.stringify(parameter.id)}, ${parameter.type == "Buffer" ? parameter.name : `JSON.stringify(${parameter.name})`})`)}
+		${route.parameters.map(parameter => `data.append(${JSON.stringify(parameter.id)}, ${parameter.type == "Buffer" ? parameter.name : `JSON.stringify(${parameter.name})`})`).join("\n\t\t")}
 
 		return await fetch(Service.toURL(${JSON.stringify(route.id)}), {
 			method: "post",
