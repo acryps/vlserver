@@ -83,6 +83,8 @@ export class BaseServer {
 
 			try {
 				const body = req.body;
+				const files = (req as any).files;
+
 				const params = {};
 
 				for (let paramKey in paramMappings) {
@@ -147,9 +149,7 @@ export class BaseServer {
 							}
 
 							case "buffer": {
-								params[paramKey] = body[paramKey];
-
-								console.log(params[paramKey]);
+								params[paramKey] = files[paramKey][0].buffer;
 
 								break;
 							}
