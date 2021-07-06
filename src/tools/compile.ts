@@ -330,17 +330,17 @@ import { BaseServer, ViewModel, Inject } from "vlserver";
 
 ${[
 	...routes.map(r => r.controller.imports.map(i => `
-		import { ${i.name} } from ${JSON.stringify(i.file.replace(/\\/g, "/"))};
+		import { ${i.name} } from ${JSON.stringify(i.file.replace(/\\/g, "/"))}; // controller
 	`.trim())).flat(),
 	...viewModels.map(v => `import { ${v.name} } from ${JSON.stringify(`./${pathtools.relative(
 		pathtools.basename(config.services.serverOutFile), 
 		v.path.replace(/\.ts$/, "")
-	).replace(/\\/g, "/")}`)};
+	).replace(/\\/g, "/")}`)}; // view models
 	`.trim()),
 	...viewModels.map(v => `import { ${v.modelType} } from ${JSON.stringify(`./${pathtools.relative(
 		pathtools.basename(config.services.serverOutFile), 
 		v.modelSource.replace(/\.ts$/, "")
-	).replace(/\\/g, "/")}`)};
+	).replace(/\\/g, "/")}`)}; // inherited models
 	`.trim())
 ].filter((c, i, a) => a.indexOf(c) == i).join("\n")}
 
