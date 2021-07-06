@@ -309,6 +309,14 @@ function scan(directory: string) {
 	}
 }
 
+export class Import {
+	constructor(public item: string, public source: string) {}
+
+	toString() {
+		return `import { ${this.item} } from ${JSON.stringify(`./${this.source.replace(/\\/g, "/")}`)};`;
+	}
+}
+
 export function compileServices() {
 	for (let dir of config.services.scan) {
 		scan(pathtools.resolve(dir));
@@ -325,24 +333,16 @@ export function compileServices() {
 		fs.mkdirSync(path);
 	}
 
+	const imports = [
+		...routes.map(r => r.controller.imports.map(i => new Import(r.name, i.file)),
+		...viewModels.map(v => new Import(v.name, pathtools.relative(pathtools.basename(config.services.serverOutFile), v.path.replace(/\.ts$/, ""))))),
+		...viewModels.map(v => new Import(v.modelType, pathtools.relative(pathtools.basename(config.services.serverOutFile), v.modelSource.replace(/\.ts$/, ""))))
+	].filter((c, i, a) => a.map(e => e.item).indexOf(c.item) == i);
+
 	fs.writeFileSync(config.services.serverOutFile, `
 import { BaseServer, ViewModel, Inject } from "vlserver";
 
-${[
-	...routes.map(r => r.controller.imports.map(i => `
-		import { ${i.name} } from ${JSON.stringify(i.file.replace(/\\/g, "/"))}; // controller
-	`.trim())).flat(),
-	...viewModels.map(v => `import { ${v.name} } from ${JSON.stringify(`./${pathtools.relative(
-		pathtools.basename(config.services.serverOutFile), 
-		v.path.replace(/\.ts$/, "")
-	).replace(/\\/g, "/")}`)}; // view models
-	`.trim()),
-	...viewModels.map(v => `import { ${v.modelType} } from ${JSON.stringify(`./${pathtools.relative(
-		pathtools.basename(config.services.serverOutFile), 
-		v.modelSource.replace(/\.ts$/, "")
-	).replace(/\\/g, "/")}`)}; // inherited models
-	`.trim())
-].filter((c, i, a) => a.indexOf(c) == i).join("\n")}
+${imports.map(s => s.toString()).join("\n")}
 
 Inject.mappings = {
 	${Object.keys(injects).map(key => `${JSON.stringify(key)}: {
