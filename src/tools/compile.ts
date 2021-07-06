@@ -334,7 +334,7 @@ export function compileServices() {
 	}
 
 	const imports = [
-		...routes.map(r => r.controller.imports.map(i => new Import(r.name, i.file)),
+		...routes.flatMap(r => r.controller.imports.map(i => new Import(i.name, i.file)),
 		...viewModels.map(v => new Import(v.name, pathtools.relative(pathtools.basename(config.services.serverOutFile), v.path.replace(/\.ts$/, ""))))),
 		...viewModels.map(v => new Import(v.modelType, pathtools.relative(pathtools.basename(config.services.serverOutFile), v.modelSource.replace(/\.ts$/, ""))))
 	].filter((c, i, a) => a.map(e => e.item).indexOf(c.item) == i);
