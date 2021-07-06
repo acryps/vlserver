@@ -337,12 +337,14 @@ export function compileServices() {
 		...routes.flatMap(r => r.controller.imports.map(i => new Import(i.name, i.file)),
 		...viewModels.map(v => new Import(v.name, pathtools.relative(pathtools.basename(config.services.serverOutFile), v.path.replace(/\.ts$/, ""))))),
 		...viewModels.map(v => new Import(v.modelType, pathtools.relative(pathtools.basename(config.services.serverOutFile), v.modelSource.replace(/\.ts$/, ""))))
-	].filter((c, i, a) => c.source != "vlserver" && a.map(e => e.item).indexOf(c.item) == i);
+	];
+
+	console.log(imports.map(i => i.toString()).join("\n"));
 
 	fs.writeFileSync(config.services.serverOutFile, `
 import { BaseServer, ViewModel, Inject } from "vlserver";
 
-${imports.map(s => s.toString()).join("\n")}
+${imports.filter((c, i, a) => c.source != "vlserver" && a.map(e => e.item).indexOf(c.item) == i).map(s => s.toString()).join("\n")}
 
 Inject.mappings = {
 	${Object.keys(injects).map(key => `${JSON.stringify(key)}: {
