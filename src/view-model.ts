@@ -50,7 +50,7 @@ export class ViewModel<TModel> implements JSONResolvable {
 			}
 
 			// load remaining data
-			const data = await set.where(item => item.id.includedIn(ids)).includeTree(referencedTypes).toArray();
+			const data = await (set as any).where(item => item.id.includedIn(ids)).includeTree(referencedTypes).toArray();
 
 			// assign prefetched data to sources
 			for (let item of sources) {
