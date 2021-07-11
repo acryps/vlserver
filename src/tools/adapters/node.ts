@@ -12,6 +12,11 @@ import FormData = require("form-data");
 
 export class Service {
     static baseUrl = "";
+	static headers: {};
+
+	static getHeaders(route: string, data: any) {
+		return Service.headers;
+	}
 }
 
 ${Object.keys(enums).map(name => `export class ${name} {
@@ -78,7 +83,8 @@ export class ${controller.name} {
 
 		return await fetch(\`\${Service.baseUrl}${route.id}\`, {
 			method: "post",
-			body: data
+			body: data,
+			headers: Service.getHeaders(${JSON.stringify(route.id)}, { ${route.parameters.map(p => p.name).join(", ")} })
 		}).then(res => res.json()).then(r => {
 			${((!route.returnType.length || route.returnType[0] == "void") ? `
 
