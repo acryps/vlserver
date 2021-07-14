@@ -342,7 +342,7 @@ export function compileServices() {
 	fs.writeFileSync(config.services.serverOutFile, `
 import { BaseServer, ViewModel, Inject } from "vlserver";
 
-${imports.filter((c, i, a) => c.source != "vlserver" && a.map(e => e.item).indexOf(c.item) == i).map(s => s.toString()).join("\n")}
+${imports.filter((c, i, a) => c.source[0] == "." && a.map(e => e.item).indexOf(c.item) == i).map(s => s.toString()).join("\n")}
 
 Inject.mappings = {
 	${Object.keys(injects).map(key => `${JSON.stringify(key)}: {
