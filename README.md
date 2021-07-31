@@ -4,14 +4,14 @@
 <img src="doc/logo.svg" height="50">
 
 # vlserver API Binder
-vlserver automates api interfaces by automatically binding Services and ViewModels from the server to clients.
+vlserver automates api interfaces by automatically binding Services and ViewModels from the server to one or multiple clients.
 
 > This package **requires** [vlquery](https://npmjs.com/vlquery).
 
 ## Documentation
 [Getting Started](doc/getting-started.md)<br>
 [Adapters](doc/adapters.md)<br>
-[Data Exchange](doc/data-exchange.md)
+[Data Exchange](doc/exchange.md)
 
 ## Example
 Declare view models on the server
