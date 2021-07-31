@@ -13,6 +13,9 @@ vlserver automates api interfaces by automatically binding Services and ViewMode
 [Adapters](doc/adapters.md)<br>
 [Data Exchange](doc/exchange.md)
 
+## Sponsoring and support
+This project is sponsored and supported by [inter allied crypsis / ACRYPS](https://acryps.com) and [VLVT.IN GmbH](https://vlvt.in).
+
 ## Example
 Declare view models on the server
 ```

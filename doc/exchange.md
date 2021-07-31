@@ -30,8 +30,6 @@ Content-Disposition: form-data; name="kwYmt1c2hvb284cGN4OXpkaWhkZHJ6bn"
 ------WebKitFormBoundaryywIrc07RdSzlJJEt--
 ```
 
-As you may see, the route and the the parameter names seem random - but they are not. vlserver obfuscates route names to prevent request guessing. Bonus side effect: We don't need to set a route name for every single route.
+As you may see, the route and the the parameter names seem random - but they are not. vlserver obfuscates route names to prevent request guessing. Bonus side effect: We don't need to set a route name for every single route. The route and parameter names are sha512 hashes. They change when you change parameter names, controller names, ...
 
-The names are sha512 hashes. They change when you change parameter names, controller names, ...
-
-Using multipart/form data allows us to send `Blob`/`Buffer` (whole files) without converting them to another format.
+Using multipart/form data allows us to send `Blob`/`Buffer` (whole files) without converting them to another format. The transmitted objects will automatically be converted back to instances of ViewModels. Dates are encoded as ISO.
