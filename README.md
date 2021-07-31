@@ -1,3 +1,6 @@
+[![npm version](http://badge.acryps.com/npm/vlserver)](http://badge.acryps.com/go/npm/vlserver)
+![vlquery](http://badge.acryps.com/vlquery)
+
 # vlserver API Binder
 vlserver automates api interfaces by automatically binding Services and ViewModels from the server to clients.
 
