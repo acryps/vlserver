@@ -41,7 +41,7 @@ DbClient.connectedClient.connect().then(() => {
 	// inject 'db' for DbContext, we need this to access the db context from our services
 	app.inject(DbContext, context => db);
 
-	// we'll need this later on when resolving viewmodels back into models
+	// we'll need this later on when resolving ViewModels back into models
 	ViewModel.globalFetchingContext = db;
 
 	// start the application on port 8190
@@ -72,7 +72,7 @@ export class BookViewModel extends ViewModel<Book> {
 	id; // property of Book
 	title; // property of Book
 
-	author: AuthorViewModel; // a reference in Book. you'll need to tell vlserver which viewmodel to use
+	author: AuthorViewModel; // a reference in Book. you'll need to tell vlserver which ViewModel to use
 }
 ```
 
@@ -132,6 +132,23 @@ export class BookService extends Service {
 		// delete the book in the db
 		await book.delete();
 	}
+
+	// very unepic search algo
+	async search(name: string) {
+		const query = this.db.book.toQuery();
+
+		for (let word in name.toLowerCase().trim().split(" ")) {
+			query.where(book => 
+				book.title.lowercase().includes(word) || 
+				book.author.firstname.lowercase().inclues(word) ||
+				book.author.lastname.lowercase().inclues(word)
+			);
+		}
+
+		// make sure to pass the Queryable, not the resolved list!
+		// vlserver will have to fetch every "author" of the ViewModel in a single query if you pass a list of Books, which can have a HUGE performance impact, especially when returning a lot of books.
+		return BookViewModel.from(query.limit(10));
+	}
 }
 ```
 
@@ -169,6 +186,17 @@ $ vlserver compile
 ```
 
 A `service.ts` file should have been created in `client`.
+
+You can consume the service by using:
+```
+const service = new BookService();
+service.getBooks(); // Promise<Array<BookViewModel>>
+
+const book = await service.getBook("some-id"); // Promise<BookViewModel>
+book.title = "A new title";
+
+await service.updateBook(book); // Promise<void>
+```
 
 All you'll need to do now is compile the server and run it!
 ```

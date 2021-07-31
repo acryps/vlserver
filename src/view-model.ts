@@ -84,9 +84,9 @@ export class ViewModel<TModel> implements JSONResolvable {
 
 		const mapped = await mapper();
 
-		// this resolves all the viewmodels within this viewmodel
+		// this resolves all the ViewModels within this ViewModel
 		// this not not recursive for performance and maintanance reasons
-		// a viewmodel should NOT contain an object which cannot be resolved to JSON using "resolveToJSON"
+		// a ViewModel should NOT contain an object which cannot be resolved to JSON using "resolveToJSON"
 		for (let property in mapped) {
 			if (typeof mapped[property] == "object" && mapped[property] && "resolveToJSON" in mapped[property]) {
 				mapped[property] = await mapped[property].resolveToJSON();
