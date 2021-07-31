@@ -8,35 +8,32 @@ export class BaseServer {
 	app: express.Application;
 	upload; // multer upload handler
 
+	injectors: { [name: string]: (context: RunContext) => any } = {};
+
 	prepareRoutes() {}
 
 	use(module: ServerModule) {
 		module.install(this);
 	}
 
+	inject<T>(type: new () => T, resolver: (context: RunContext) => T) {
+		this.injectors[type.name] = resolver;
+	}
+
 	createRunContext(req, res) {
 		return new RunContext();
 	}
 
-	createDatabaseContext(context: RunContext) {
-		if (typeof this.databaseContext == "function") {
-			return new this.databaseContext(context);
-		}
-
-		if (this.databaseContext) {
-			return this.databaseContext;
-		}
-
-		return null;
-	}
-
 	createInjector(context: RunContext) {
-		return new Inject({
-			DbContext: this.createDatabaseContext(context)
-		});
+		const injects = {};
+
+		for (let name in this.injectors) {
+			injects[name] = this.injectors[name](context);
+		}
+
+		return new Inject(injects);
 	}
 
-	databaseContext: new (context: RunContext) => any | any;
 	modules: [];
 
 	constructor() {
@@ -47,8 +44,6 @@ export class BaseServer {
 	start(port: number) {
 		// prepare routes registered by generated managed server
 		this.prepareRoutes();
-
-		ViewModel.globalFetchingContext = this.createDatabaseContext(new RunContext());
 
 		this.app.get("*", (req, res) => {
 			res.status(404).end("Route not found!");
