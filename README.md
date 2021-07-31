@@ -11,6 +11,7 @@ vlserver automates api interfaces by automatically binding Services and ViewMode
 ## Documentation
 [Getting Started](doc/getting-started.md)<br>
 [Adapters](doc/adapters.md)<br>
+[Data Exchange](doc/data-exchange.md)
 
 ## Example
 Declare view models on the server

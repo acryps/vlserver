@@ -206,4 +206,6 @@ $ vlquery compile
 $ node dist/main.js
 ```
 
+Learn how [data is exchanged](exchange.md) between clients and the server.
+
 Have fun!
