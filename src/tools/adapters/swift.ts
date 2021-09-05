@@ -96,9 +96,9 @@ class ${controller.name} : Service {
 			route.returnType.slice(0, route.returnType.length - 1).map(t => `[`)
 		}${
 			this.getType(route.returnType[route.returnType.length - 1])
-		}?${
-			"]?".repeat(route.returnType.length - 1)
-		}`}) -> Void`
+		}${
+			"]".repeat(route.returnType.length - 1)
+		}?`}) -> Void`
 	].join(", ")}) {
 		let endpoint = URL(string: toURL(route: ${JSON.stringify(route.id)}))
 		var request = URLRequest(url: endpoint!)
@@ -118,32 +118,28 @@ class ${controller.name} : Service {
 				
 				return
 			}
+
+			class ResponseBody : Codable {
+				${isVoid ? "" : `var data: ${
+					route.returnType.slice(0, route.returnType.length - 1).map(t => `[`)
+				}${
+					this.getType(route.returnType[route.returnType.length - 1])
+				}${
+					"]".repeat(route.returnType.length - 1)
+				}?`}
+				var aborted: Bool?
+				var error: String?
+			}
 			
 			do {
-				let res = try JSONSerialization.jsonObject(with: data!, options: []) as! [String: Any]
+				let res = try JSONDecoder().decode(ResponseBody.self, from: data!)
 				
-				if res["data"] != nil {
-					${isVoid ? "completionHandler(nil)" : `let result = res["data"]
-
-					completionHandler(nil, ${route.returnType.slice(0, route.returnType.length - 1).map(t => `(result as! [Any?]).map({ result in return `)}${(() => {
-						const type = route.returnType[route.returnType.length - 1];
-	
-						if (type == "boolean") {
-							return "!!result";
-						} else if (type == "string") {
-							return "result == nil ? nil : result as! String"
-						} else if (type == "number") {
-							return "result == nil ? nil : result as! Double"
-						} else if (type == "Date") {
-							return "result == nil ? nil : result as! ISO8601DateFormatter().date(from: result)"
-						} else {
-							return `result == nil ? nil : try! JSONDecoder().decode(${type}.self, from: result as! Data)`
-						} 
-					})()}${"})".repeat(route.returnType.length - 1)})`}
-				} else if res["aborted"] != nil {
+				if res.error != nil {
+					throw ServiceError(message: res.error!)
+				} else if res.aborted != true {
 					throw ServiceError(message: "request aborted by server")
-				} else if res["error"] != nil {
-					throw ServiceError(message: res["error"] as! String)
+				} else {
+					completionHandler(nil${isVoid ? "" : ", res.data"})
 				}
 			} catch let error {
 				completionHandler(error${isVoid ? "" : ", nil"})
