@@ -136,7 +136,7 @@ class ${controller.name} : Service {
 				
 				if res.error != nil {
 					throw ServiceError(message: res.error!)
-				} else if res.aborted != true {
+				} else if res.aborted == true {
 					throw ServiceError(message: "request aborted by server")
 				} else {
 					completionHandler(nil${isVoid ? "" : ", res.data"})
