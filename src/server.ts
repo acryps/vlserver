@@ -8,7 +8,7 @@ export class BaseServer {
 	app: express.Application;
 	upload; // multer upload handler
 
-	injectors: { [name: string]: (context: RunContext) => any } = {};
+	injectors: { [name: string]: (context: RunContext, req, res) => any } = {};
 
 	prepareRoutes() {}
 
@@ -24,11 +24,11 @@ export class BaseServer {
 		return new RunContext();
 	}
 
-	createInjector(context: RunContext) {
+	createInjector(context: RunContext, req, res) {
 		const injects = {};
 
 		for (let name in this.injectors) {
-			injects[name] = this.injectors[name](context);
+			injects[name] = this.injectors[name](context, req, res);
 		}
 
 		return new Inject(injects);
@@ -69,7 +69,7 @@ export class BaseServer {
 			const context = this.createRunContext(req, res);
 
 			// create injector with DbContext global
-			const injector = this.createInjector(context); 
+			const injector = this.createInjector(context, req, res); 
 
 			// will be constructed
 			// scoped here to call onerror in case request fails
