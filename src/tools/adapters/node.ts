@@ -76,14 +76,14 @@ export class ${controller.name} {
     }${
         ">".repeat(route.returnType.length - 1)
     }> {
-		const data = new FormData();
+		const $data = new FormData();
 		${route.parameters.map(
-			parameter => `${parameter.name} !== undefined && data.append(${JSON.stringify(parameter.id)}, ${parameter.type == "Buffer" ? parameter.name : `JSON.stringify(${parameter.name})`})`
+			parameter => `${parameter.name} !== undefined && $data.append(${JSON.stringify(parameter.id)}, ${parameter.type == "Buffer" ? parameter.name : `JSON.stringify(${parameter.name})`})`
 		).join("\n\t\t")}
 
 		return await fetch(\`\${Service.baseUrl}${route.id}\`, {
 			method: "post",
-			body: data,
+			body: $data,
 			headers: Service.getHeaders(${JSON.stringify(route.id)}, { ${route.parameters.map(p => p.name).join(", ")} })
 		}).then(res => res.json()).then(r => {
 			${((!route.returnType.length || route.returnType[0] == "void") ? `
