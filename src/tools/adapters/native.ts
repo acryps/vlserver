@@ -71,13 +71,13 @@ export class ${controller.name} {
     }${
         ">".repeat(route.returnType.length - 1)
     }> {
-		const data = new FormData();
-		${route.parameters.map(parameter => `data.append(${JSON.stringify(parameter.id)}, ${parameter.type == "Buffer" ? parameter.name : `JSON.stringify(${parameter.name})`})`).join("\n\t\t")}
+		const $data = new FormData();
+		${route.parameters.map(parameter => `$data.append(${JSON.stringify(parameter.id)}, ${parameter.type == "Buffer" ? parameter.name : `JSON.stringify(${parameter.name})`})`).join("\n\t\t")}
 
 		return await fetch(Service.toURL(${JSON.stringify(route.id)}), {
 			method: "post",
 			credentials: "include",
-			body: data
+			body: $data
 		}).then(res => res.json()).then(r => {
 			${((!route.returnType.length || route.returnType[0] == "void") ? `
 			
