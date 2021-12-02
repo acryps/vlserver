@@ -1,17 +1,14 @@
 import fs = require("fs");
-import { Compiler } from "./compiler";
+import { compileServices } from "./compile";
 
 const args = process.argv.slice(2);
 
 switch (args[0]) {
 	case "compile":
 		try {
-			const compiler = new Compiler();
-			compiler.run();
+			compileServices();
 		} catch (e) {
 			console.error(e);
-
-			process.exit(1);
 		}
 
 		break;
