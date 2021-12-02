@@ -74,7 +74,7 @@ export class ${controller.name} {
         ">".repeat(route.returnType.length - 1)
     }> {
         const $data = new FormData();
-        ${route.parameters.map(parameter => `$data.append(${JSON.stringify(parameter.id)}, ${parameter.type == "Buffer" ? `${parameter.name} as Blob` : `JSON.stringify(${parameter.name})`})`).join("\n\t\t")}
+        ${route.parameters.map(parameter => `$data.append(${JSON.stringify(parameter.id)}, ${parameter.type == "Buffer" ? `${parameter.name} as unknown as Blob` : `JSON.stringify(${parameter.name})`})`).join("\n\t\t")}
 
         return await fetch(Service.toURL(${JSON.stringify(route.id)}), {
             method: "post",
