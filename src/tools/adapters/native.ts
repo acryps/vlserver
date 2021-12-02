@@ -73,57 +73,55 @@ export class ${controller.name} {
     }${
         ">".repeat(route.returnType.length - 1)
     }> {
-        const $data = new FormData();
-        ${route.parameters.map(parameter => `$data.append(${JSON.stringify(parameter.id)}, ${parameter.type == "Buffer" ? parameter.name : `JSON.stringify(${parameter.name})`})`).join("\n\t\t")}
+		const data = new FormData();
+		${route.parameters.map(parameter => `data.append(${JSON.stringify(parameter.id)}, ${parameter.type == "Buffer" ? parameter.name : `JSON.stringify(${parameter.name})`})`).join("\n\t\t")}
 
-        return await fetch(Service.toURL(${JSON.stringify(route.id)}), {
-            method: "post",
-            credentials: "include",
-            body: $data
-        }).then(res => res.json()).then(r => {
-            ${((!route.returnType.length || route.returnType[0] == "void") ? `
-            
-            if ("error" in r) {
-                throw new Error(r.error);
-            }
+		return await fetch(Service.toURL(${JSON.stringify(route.id)}), {
+			method: "post",
+			credentials: "include",
+			body: data
+		}).then(res => res.json()).then(r => {
+			${((!route.returnType.length || route.returnType[0] == "void") ? `
+			
+			if ("error" in r) {
+				throw new Error(r.error);
+			}
 
-            if ("aborted" in r) {
-                throw new Error("request aborted by server");
-            }
-            
-            ` : `
+			if ("aborted" in r) {
+				throw new Error("request aborted by server");
+			}
+			
+			` : `
 
-            if ("data" in r) {
-                const d = r.data;
+			if ("data" in r) {
+				const d = r.data;
 
-                return ${route.returnType.slice(0, route.returnType.length - 1).map(t => `d.map(d => `)}${(() => {
-                    const type = route.returnType[route.returnType.length - 1];
+				return ${route.returnType.slice(0, route.returnType.length - 1).map(t => `d.map(d => `)}${(() => {
+					const type = route.returnType[route.returnType.length - 1];
 
-                    if (type == "boolean") {
-                        return "!!d";
-                    } else if (type == "string") {
-                        return "d === null ? null : `${d}`";
-                    } else if (type == "number") {
-                        return "d === null ? null : +d";
-                    } else if (type == "Date") {
-                        return "d === null ? null : new Date(d)";
-                    } else if (type == "Buffer") {
-                        return "d === null ? null : d";
-                    } else {
-                        return `d === null ? null : ${type}["$build"](d)`;
-                    } 
-                })()}${")".repeat(route.returnType.length - 1)};
-            } else if ("aborted" in r) {
-                throw new Error("request aborted by server");
-            } else if ("error" in r) {
-                throw new Error(r.error);
-            }
-            
-            `).trim()}
-        });
-    }
-    
-    `.trim()).join("\n\n\t")}
+					if (type == "boolean") {
+						return "!!d";
+					} else if (type == "string") {
+						return "d === null ? null : `${d}`";
+					} else if (type == "number") {
+						return "d === null ? null : +d";
+					} else if (type == "Date") {
+						return "d === null ? null : new Date(d)";
+					} else {
+						return `d === null ? null : ${type}["$build"](d)`;
+					} 
+				})()}${")".repeat(route.returnType.length - 1)};
+			} else if ("aborted" in r) {
+				throw new Error("request aborted by server");
+			} else if ("error" in r) {
+				throw new Error(r.error);
+			}
+			
+			`).trim()}
+		});
+	}
+	
+	`.trim()).join("\n\n\t")}
 }
 `.trim()).join("\n\n")}`.trim());
     }
