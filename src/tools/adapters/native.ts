@@ -93,7 +93,7 @@ export class ${controller.name} {
             
             ` : `
 
-            if ("data" in r) {
+            ${route.returnType[route.returnType.length - 1] == "Buffer" ? "return r;" : `if ("data" in r) {
                 const d = r.data;
 
                 return ${route.returnType.slice(0, route.returnType.length - 1).map(t => `d.map(d => `)}${(() => {
@@ -107,8 +107,6 @@ export class ${controller.name} {
                         return "d === null ? null : +d";
                     } else if (type == "Date") {
                         return "d === null ? null : new Date(d)";
-                    } else if (type == "Buffer") {
-                        return "d === null ? null : d";
                     } else {
                         return `d === null ? null : ${type}["$build"](d)`;
                     } 
@@ -117,7 +115,7 @@ export class ${controller.name} {
                 throw new Error("request aborted by server");
             } else if ("error" in r) {
                 throw new Error(r.error);
-            }
+            }`}
             
             `).trim()}
         });

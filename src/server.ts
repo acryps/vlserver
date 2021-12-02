@@ -189,9 +189,13 @@ export class BaseServer {
 						}
 					}
 
-					res.json({
-						data
-					});
+					if (data && typeof data == "object" && data instanceof Buffer) {
+						res.end(data);
+					} else {
+						res.json({
+							data
+						});
+					}
 				}
 			} catch (e) {
 				console.error(e);
