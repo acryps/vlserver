@@ -11,8 +11,6 @@ ${Object.keys(enums).map(name => `export class ${name} {
     ${Object.keys(enums[name]).map(prop => `static readonly ${prop} = ${JSON.stringify(enums[name][prop])};`).join("\n\t")}
 }`).join("\n\n")}
 
-const Buffer = Blob;
-
 ${viewModels.map(viewModel => `
 export class ${viewModel.name} {
     ${Object.keys(viewModel.properties).map(name => {
@@ -66,15 +64,15 @@ ${controllers.map(controller => `
 export class ${controller.name} {
     ${routes.filter(r => r.controller == controller).map(route => `
     
-    async ${route.name}(${route.parameters.map(parameter => `${parameter.name}: ${parameter.type}${parameter.isArray ? "[]" : ""}`).join(", ")}): Promise<${
+    async ${route.name}(${route.parameters.map(parameter => `${parameter.name}: ${parameter.type == "Buffer" ? "Blob" : parameter.type}${parameter.isArray ? "[]" : ""}`).join(", ")}): Promise<${
         route.returnType.slice(0, route.returnType.length - 1).map(t => `Array<`)
     }${
-        route.returnType[route.returnType.length - 1]
+        route.returnType[route.returnType.length - 1] == "Buffer" ? "Blob" : route.returnType[route.returnType.length - 1]
     }${
         ">".repeat(route.returnType.length - 1)
     }> {
         const $data = new FormData();
-        ${route.parameters.map(parameter => `$data.append(${JSON.stringify(parameter.id)}, ${parameter.type == "Buffer" ? `${parameter.name} as unknown as Blob` : `JSON.stringify(${parameter.name})`})`).join("\n\t\t")}
+        ${route.parameters.map(parameter => `$data.append(${JSON.stringify(parameter.id)}, ${parameter.type == "Buffer" ? parameter.name : `JSON.stringify(${parameter.name})`})`).join("\n\t\t")}
 
         return await fetch(Service.toURL(${JSON.stringify(route.id)}), {
             method: "post",
