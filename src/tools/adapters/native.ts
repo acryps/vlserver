@@ -80,7 +80,7 @@ export class ${controller.name} {
             method: "post",
             credentials: "include",
             body: $data
-        }).then(res => res.json()).then(r => {
+        }).then(res => res.${route.returnType[route.returnType.length - 1] == "Buffer" ? "blob" : "json"}()).then(r => {
             ${((!route.returnType.length || route.returnType[0] == "void") ? `
             
             if ("error" in r) {
