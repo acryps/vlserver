@@ -99,6 +99,10 @@ export class ViewModel<TModel> implements JSONResolvable {
 			return mapped;
 		}
 
+		if (!source) {
+			return null;
+		}
+
 		const mapper = (new mapping()).map.bind({
 			model: source
 		});
