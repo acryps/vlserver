@@ -83,7 +83,7 @@ export class ViewModel<TModel> implements JSONResolvable {
 
 		const mapping = ViewModel.mappings[this.constructor.name];
 		
-		if (!this.createdFromScratch) {
+		if (this.createdFromScratch) {
 			const mapped: any = {};
 
 			for (let property in this) {
