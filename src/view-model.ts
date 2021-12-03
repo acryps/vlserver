@@ -5,8 +5,16 @@ export class ViewModel<TModel> implements JSONResolvable {
 	static mappings: any; // global mappings injected by server routing
 	protected model: TModel; // model proxy
 	static globalFetchingContext;
+	private source?: TModel;
+	private createdFromScratch = false;
 
-	constructor(private source?: TModel) {}
+	constructor(source?: TModel) {
+		if (arguments.length) {
+			this.source = source;
+		} else {
+			this.createdFromScratch = true;
+		}
+	}
 
 	async toModel() {
 		return await ViewModel.mappings[this.constructor.name].toModel(this) as TModel;
@@ -75,7 +83,7 @@ export class ViewModel<TModel> implements JSONResolvable {
 
 		const mapping = ViewModel.mappings[this.constructor.name];
 		
-		if (!source) {
+		if (!this.createdFromScratch) {
 			const mapped: any = {};
 
 			for (let property in this) {
