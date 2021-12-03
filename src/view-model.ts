@@ -6,7 +6,7 @@ export class ViewModel<TModel> implements JSONResolvable {
 	protected model: TModel; // model proxy
 	static globalFetchingContext;
 
-	constructor(private source: TModel) {}
+	constructor(private source?: TModel) {}
 
 	async toModel() {
 		return await ViewModel.mappings[this.constructor.name].toModel(this) as TModel;
@@ -74,7 +74,7 @@ export class ViewModel<TModel> implements JSONResolvable {
 		let source = this.source;
 
 		if (source == null) {
-			return null;
+			return this;
 		}
 
 		const mapping = ViewModel.mappings[this.constructor.name];
