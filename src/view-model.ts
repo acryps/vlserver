@@ -76,13 +76,15 @@ export class ViewModel<TModel> implements JSONResolvable {
 		const mapping = ViewModel.mappings[this.constructor.name];
 		
 		if (!source) {
-			const mapped: Partial<this> = {};
+			const mapped: any = {};
 
 			for (let property in this) {
-				if (typeof this[property] == "object" && this[property] && "resolveToJSON" in this[property]) {
-					mapped[property] = await this[property].resolveToJSON();
+				const child = this[property] as any;
+
+				if (typeof child == "object" && child && "resolveToJSON" in child) {
+					mapped[property] = await child.resolveToJSON();
 				} else {
-					mapped[property] = this[property];
+					mapped[property] = child;
 				}
 			}
 
