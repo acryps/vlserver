@@ -80,7 +80,7 @@ export class ViewModel<TModel> implements JSONResolvable {
 
 			for (let property in this) {
 				if (typeof this[property] == "object" && this[property] && "resolveToJSON" in this[property]) {
-					mapped[property] = await this.resolveToJSON();
+					mapped[property] = await this[property].resolveToJSON();
 				} else {
 					mapped[property] = this[property];
 				}
