@@ -23,7 +23,7 @@
 		"typescript": "^4.0.3"
 	},
 	"peerDependencies": {
-		"vlquery": "5.x"
+		"vlquery": "~5"
 	},
 	"repository": {
 		"type": "git",
