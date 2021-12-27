@@ -1,6 +1,6 @@
 {
 	"name": "vlserver",
-	"version": "4.4.12",
+	"version": "4.4.13",
 	"description": "VLServer Managed Server",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
