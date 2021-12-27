@@ -75,14 +75,14 @@ class ${viewModel.name} : Codable {
 		const property = viewModel.properties[name];
 		const isArray = property.fetch && property.fetch.many;
 
-		return `var ${name}: ${isArray ? "[" : ""}${this.getType(property.propertyType)}${isArray ? "]" : ""};`;
+		return `var ${name}: ${isArray ? "[" : ""}${this.getType(property.propertyType)}${isArray ? "]" : ""}?`;
 	}).join("\n\t")}
 
 	public init(${Object.keys(viewModel.properties).map(name => {
 		const property = viewModel.properties[name];
 		const isArray = property.fetch && property.fetch.many;
 
-		return `${name}: ${isArray ? "[" : ""}${this.getType(property.propertyType)}${isArray ? "]" : ""}`;
+		return `${name}: ${isArray ? "[" : ""}${this.getType(property.propertyType)}${isArray ? "]" : ""}?`;
 	}).join(", ")}) {
         ${Object.keys(viewModel.properties).map(name => {
 			const property = viewModel.properties[name];
