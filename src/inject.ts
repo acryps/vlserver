@@ -12,6 +12,11 @@ export class Inject {
 
 	construct(objectConstructor: new (...args) => any) {
 		const mapping = Inject.mappings[objectConstructor.name];
+
+		if (!mapping) {
+			return new objectConstructor();
+		}
+
 		const parameters = [];
 
 		for (let key of mapping.parameters) {
