@@ -1,10 +1,10 @@
 import fs = require("fs");
 import path = require("path");
 import { NativeServiceAdapter } from "./adapters/native";
-import { ServiceAdapter } from "./adapters/base";
 import { AngularServiceAdapter } from "./adapters/angular";
 import { NodeServiceAdapter } from "./adapters/node";
 import { SwiftServiceAdapter } from "./adapters/swift";
+import { InterfaceServiceAdapter } from "./adapters/interface";
 
 let rootFolder = process.cwd();
 
@@ -31,7 +31,8 @@ export const config = {
 				native: new NativeServiceAdapter(item),
 				angular: new AngularServiceAdapter(item),
 				node: new NodeServiceAdapter(item),
-				swift: new SwiftServiceAdapter(item)
+				swift: new SwiftServiceAdapter(item),
+				interface: new InterfaceServiceAdapter(item)
 			}[item.type];
 		})
 	}

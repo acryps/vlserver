@@ -22,3 +22,6 @@ vlserver supports Swift/iOS applications. You don't need any packages, vlserver 
 You need to set `Service.baseUrl = "example.com"` before making any requests.
 
 > Buffers/Blobs are **not** supported yet.
+
+## Interface Adapter
+generates view model interfaces without services.
