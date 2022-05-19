@@ -81,7 +81,7 @@ class ServiceError : Error {
 }
 
 ${viewModels.map(viewModel => `
-class ${viewModel.name} : Codable {
+class ${viewModel.name} : Codable, Hashable, Identifiable {
 	${Object.keys(viewModel.properties).map(name => {
 		const property = viewModel.properties[name];
 		const isArray = property.fetch && property.fetch.many;
@@ -101,6 +101,14 @@ class ${viewModel.name} : Codable {
 	
 			return `self.${name} = ${name}`;
 		}).join("\n\t\t")}
+    }
+
+	static func == (lhs: ContainerSummaryModel, rhs: ContainerSummaryModel) -> Bool {
+        return lhs.id == rhs.id
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
     }
 }
 `.trim()).join("\n\n")}
