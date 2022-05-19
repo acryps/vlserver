@@ -24,11 +24,22 @@ export class SwiftServiceAdapter extends ServiceAdapter {
 import Foundation
 
 class Service {
-	static var baseUrl = ""
+	static var prepareRequest: (_ url: URL) -> URLRequest = {
+        url in
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        
+        return request
+    }
 	
 	func toURL(route: String) -> String {
 		return "\\(Service.baseUrl)\\(route)"
 	}
+    
+    static func createRequest(url: URL) -> URLRequest {
+        return prepareRequest(url)
+    }
 }
 
 class RequestBody {
@@ -115,8 +126,7 @@ class ${controller.name} : Service {
 		}?`}) -> Void`
 	].join(", ")}) {
 		let endpoint = URL(string: toURL(route: ${JSON.stringify(route.id)}))
-		var request = URLRequest(url: endpoint!)
-		request.httpMethod = "POST"
+		var request = Service.createRequest(url: endpoint!)
 		
 		let body = RequestBody()
 		${route.parameters.map(
