@@ -103,7 +103,7 @@ class ${viewModel.name} : Codable, Hashable, Identifiable {
 		}).join("\n\t\t")}
     }
 
-	static func == (lhs: ContainerSummaryModel, rhs: ContainerSummaryModel) -> Bool {
+	static func == (lhs: ${viewModel.name}, rhs: ${viewModel.name}) -> Bool {
         return lhs.id == rhs.id
     }
     
