@@ -24,6 +24,8 @@ export class SwiftServiceAdapter extends ServiceAdapter {
 import Foundation
 
 class Service {
+	static var baseUrl = ""
+	
 	static var prepareRequest: (_ url: URL) -> URLRequest = {
         url in
         
