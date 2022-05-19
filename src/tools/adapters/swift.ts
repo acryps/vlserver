@@ -25,7 +25,7 @@ import Foundation
 
 class Service {
 	static var baseUrl = ""
-	
+
 	static var prepareRequest: (_ url: URL) -> URLRequest = {
         url in
         
@@ -67,8 +67,6 @@ class RequestBody {
 	
 	func create() -> Data {
 		body.append("------\\(boundary)--".data(using: .ascii)!)
-		
-		print(String(data: body as! Data, encoding: .ascii)!)
 		
 		return Data(body as Data)
 	}
