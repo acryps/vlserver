@@ -6,7 +6,8 @@ export class SwiftServiceAdapter extends ServiceAdapter {
 		string: "String",
 		number: "Double",
 		boolean: "Bool",
-		Date: "Date"
+		Date: "Date",
+		Buffer: "Data"
 	}
 
 	getType(type) {
