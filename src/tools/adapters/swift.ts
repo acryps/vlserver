@@ -69,6 +69,7 @@ class RequestBody {
 	func appendFile(name: String, data: Data) {
 		body.append("------\\(boundary)\\r\\n".data(using: .ascii)!)
 		body.append("Content-Disposition: form-data; name=\\"\\(name)\\"; filename=\\"\\(name)\\"\\r\\n\\r\\n".data(using: .ascii)!)
+		body.append("Content-Type: application/octet-stream".data(using: .ascii)!)
 		body.append(data)
 		body.append("\\r\\n".data(using: .ascii)!)
 	}
