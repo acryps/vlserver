@@ -65,6 +65,13 @@ class RequestBody {
 		body.append(data)
 		body.append("\\r\\n".data(using: .ascii)!)
 	}
+
+	func appendFile(name: String, data: Data) {
+		body.append("------\\(boundary)\\r\\n".data(using: .ascii)!)
+		body.append("Content-Disposition: form-data; name=\\"\\(name)\\"; filename=\\"\\(filename)\\"\\r\\n\\r\\n".data(using: .ascii)!)
+		body.append(data)
+		body.append("\\r\\n".data(using: .ascii)!)
+	}
 	
 	func create() -> Data {
 		body.append("------\\(boundary)--".data(using: .ascii)!)
@@ -139,7 +146,7 @@ class ${controller.name} : Service {
 		
 		let body = RequestBody()
 		${route.parameters.map(
-			parameter => `body.append(name: ${JSON.stringify(parameter.id)}, data: ${parameter.type == 'Buffer' ? parameter.name : `try! JSONEncoder().encode(${parameter.name})`})`
+			parameter => `body.${parameter.type == 'Buffer' ? 'appendFile' : 'append'}(name: ${JSON.stringify(parameter.id)}, data: ${parameter.type == 'Buffer' ? parameter.name : `try! JSONEncoder().encode(${parameter.name})`})`
 		).join("\n\t\t")}
 		
 		request.setValue(body.header, forHTTPHeaderField: "Content-Type")
