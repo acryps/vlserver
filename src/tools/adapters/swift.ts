@@ -139,7 +139,7 @@ class ${controller.name} : Service {
 		
 		let body = RequestBody()
 		${route.parameters.map(
-			parameter => `body.append(name: ${JSON.stringify(parameter.id)}, data: try! JSONEncoder().encode(${parameter.name}))`
+			parameter => `body.append(name: ${JSON.stringify(parameter.id)}, data: ${parameter.type == 'Buffer' ? parameter.name : `try! JSONEncoder().encode(${parameter.name})`})`
 		).join("\n\t\t")}
 		
 		request.setValue(body.header, forHTTPHeaderField: "Content-Type")
