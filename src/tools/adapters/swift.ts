@@ -43,6 +43,28 @@ class Service {
     static func createRequest(url: URL) -> URLRequest {
         return prepareRequest(url)
     }
+
+	static func decode<T : Decodable>(from data: Data) throws -> T {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .iso8601)
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSXXXXX"
+        
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .custom({
+            decoder in
+            
+            let container = try decoder.singleValueContainer()
+            let dateStr = try container.decode(String.self)
+            
+            if let date = formatter.date(from: dateStr) {
+                return date
+            }
+            
+            return Date()
+        })
+        
+        return try decoder.decode(T.self, from: data)
+    }
 }
 
 class RequestBody {
@@ -173,7 +195,7 @@ class ${controller.name} : Service {
 			}
 			
 			do {
-				let res = try JSONDecoder().decode(ResponseBody.self, from: data!)
+				let res: ResponseBody = try Service.decode(from: data!)
 				
 				if res.error != nil {
 					throw ServiceError(message: res.error!)
