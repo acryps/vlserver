@@ -134,6 +134,10 @@ class ${viewModel.name} : Codable, Hashable, Identifiable {
 		}).join("\n\t\t")}
     }
 
+	public convenience init() {
+        self.init(${Object.keys(viewModel.properties).map(name => `${name}: nil`).join(', ')})
+    }
+
 	static func == (lhs: ${viewModel.name}, rhs: ${viewModel.name}) -> Bool {
         return lhs.id == rhs.id
     }
