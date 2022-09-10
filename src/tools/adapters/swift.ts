@@ -39,15 +39,20 @@ class Service {
 	func toURL(route: String) -> String {
 		return "\\(Service.baseUrl)\\(route)"
 	}
+
+	static func encode<T: Encodable>(_ data: T) -> Data {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        
+        return try! encoder.encode(data)
+    }
     
     static func createRequest(url: URL) -> URLRequest {
         return prepareRequest(url)
     }
 
 	static func decode<T : Decodable>(from data: Data) throws -> T {
-        let formatter = DateFormatter()
-        formatter.calendar = Calendar(identifier: .iso8601)
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSXXXXX"
+        let formatter = ISO8601DateFormatter()
         
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .custom({
@@ -173,7 +178,7 @@ class ${controller.name} : Service {
 		
 		let body = RequestBody()
 		${route.parameters.map(
-			parameter => `body.${parameter.type == 'Buffer' ? 'appendFile' : 'append'}(name: ${JSON.stringify(parameter.id)}, data: ${parameter.type == 'Buffer' ? parameter.name : `try! JSONEncoder().encode(${parameter.name})`})`
+			parameter => `body.${parameter.type == 'Buffer' ? 'appendFile' : 'append'}(name: ${JSON.stringify(parameter.id)}, data: ${parameter.type == 'Buffer' ? parameter.name : `Service.encode(${parameter.name})`})`
 		).join("\n\t\t")}
 		
 		request.setValue(body.header, forHTTPHeaderField: "Content-Type")
