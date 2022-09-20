@@ -163,7 +163,7 @@ class ${controller.name} : Service {
 
 	func ${route.name}(${[
 		...route.parameters.map(
-			parameter => `${parameter.name}: ${parameter.isArray ? "[" : ""}${this.getType(parameter.type)}${parameter.isArray ? "]" : ""}`
+			parameter => `${parameter.name}: ${parameter.isArray ? "[" : ""}${this.getType(parameter.type)}${parameter.isArray ? "]" : ""}?`
 		),
 		`completionHandler: @escaping (Error?${isVoid ? "" : `, ${
 			route.returnType.slice(0, route.returnType.length - 1).map(t => `[`)
