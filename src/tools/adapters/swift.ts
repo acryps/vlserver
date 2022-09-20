@@ -177,9 +177,17 @@ class ${controller.name} : Service {
 		var request = Service.createRequest(url: endpoint!)
 		
 		let body = RequestBody()
-		${route.parameters.map(
-			parameter => `body.${parameter.type == 'Buffer' ? 'appendFile' : 'append'}(name: ${JSON.stringify(parameter.id)}, data: ${parameter.type == 'Buffer' ? parameter.name : `Service.encode(${parameter.name})`})`
-		).join("\n\t\t")}
+		${route.parameters.map(parameter => {
+			if (parameter.type == 'Buffer') {
+				return `if (parameter.name == nil) { 
+					body.append(name: ${JSON.stringify(parameter.id)}, data: nil) 
+				} else {
+					body.appendFile(name: ${JSON.stringify(parameter.id)}, data: ${parameter.name}!)
+				}`
+			}
+
+			return `body.append(name: ${JSON.stringify(parameter.id)}, data: Service.encode(${parameter.name}))`;
+		}).join("\n\t\t")}
 		
 		request.setValue(body.header, forHTTPHeaderField: "Content-Type")
 		request.httpBody = body.create()
