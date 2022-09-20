@@ -180,7 +180,7 @@ class ${controller.name} : Service {
 		${route.parameters.map(parameter => {
 			if (parameter.type == 'Buffer') {
 				return `if (${parameter.name} == nil) { 
-			body.append(name: ${JSON.stringify(parameter.id)}, data: Service.encode(nil)) 
+			body.append(name: ${JSON.stringify(parameter.id)}, data: Data()) 
 		} else {
 			body.appendFile(name: ${JSON.stringify(parameter.id)}, data: ${parameter.name}!)
 		}`
