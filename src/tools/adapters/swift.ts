@@ -179,11 +179,11 @@ class ${controller.name} : Service {
 		let body = RequestBody()
 		${route.parameters.map(parameter => {
 			if (parameter.type == 'Buffer') {
-				return `if (parameter.name == nil) { 
-					body.append(name: ${JSON.stringify(parameter.id)}, data: nil) 
-				} else {
-					body.appendFile(name: ${JSON.stringify(parameter.id)}, data: ${parameter.name}!)
-				}`
+				return `if (${parameter.name} == nil) { 
+			body.append(name: ${JSON.stringify(parameter.id)}, data: Service.encode(nil)) 
+		} else {
+			body.appendFile(name: ${JSON.stringify(parameter.id)}, data: ${parameter.name}!)
+		}`
 			}
 
 			return `body.append(name: ${JSON.stringify(parameter.id)}, data: Service.encode(${parameter.name}))`;
