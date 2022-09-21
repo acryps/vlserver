@@ -53,6 +53,7 @@ class Service {
 
 	static func decode<T : Decodable>(from data: Data) throws -> T {
         let formatter = ISO8601DateFormatter()
+        formatter.formatOptions =  [.withInternetDateTime, .withFractionalSeconds]
         
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .custom({
