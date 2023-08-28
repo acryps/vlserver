@@ -8,7 +8,7 @@ export class ViewModel<TModel> implements JSONResolvable {
 	private source?: TModel;
 	private createdFromScratch = false;
 
-	maximumPrefetchingRecursionDepth = 16;
+	static maximumPrefetchingRecursionDepth = 16;
 
 	constructor(source?: TModel) {
 		if (arguments.length) {
