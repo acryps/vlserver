@@ -391,17 +391,25 @@ ViewModel.mappings = {
 			}
 		};
 
-		static get items() { 
+		static get items() {
+			return this.getPrefetchingProperties(ViewModel.maximumPrefetchingRecursionDepth);
+		}
+
+		static getPrefetchingProperties(level: number) {
+			if (!level) {
+				return;
+			}
+
 			return {
 				${Object.keys(viewModel.properties).map(name => viewModel.properties[name].fetch ? `
 			
-				get ${name}() { 
-					return ViewModel.mappings.${viewModel.properties[name].fetch.single || viewModel.properties[name].fetch.many}.items;
+				get ${name}() {
+					return ViewModel.mappings.${viewModel.properties[name].fetch.single || viewModel.properties[name].fetch.many}.getPrefetchingProperties(level - 1);
 				}
 
 			`.trim() : `${name}: true`).join(",\n\t\t\t\t")}
 			};
-		}
+		};
 
 		static toViewModel(data) {
 			const item = new ${viewModel.name}(null);
