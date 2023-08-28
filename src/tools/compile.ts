@@ -400,7 +400,7 @@ ViewModel.mappings = {
 
 			for (let size = 1; size <= parents.length / 2; size++) {
 				if (!repeats) {
-					for (let index = 0; index < parents.length - ; index++) {
+					for (let index = 0; index < parents.length; index++) {
 						if (parents[parents.length - 1 - index] == parents[parents.length - 1 - index - size]) {
 							repeats = true;
 						}
@@ -413,7 +413,7 @@ ViewModel.mappings = {
 			}
 
 			if (!level) {
-				return;
+				return {};
 			}
 
 			return {

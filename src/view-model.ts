@@ -8,7 +8,9 @@ export class ViewModel<TModel> implements JSONResolvable {
 	private source?: TModel;
 	private createdFromScratch = false;
 
-	static maximumPrefetchingRecursionDepth = 16;
+	// how many levels of a property referencing the same view model should be preloaded
+	// works with indirect chains too!
+	static maximumPrefetchingRecursionDepth = 1;
 
 	constructor(source?: TModel) {
 		if (arguments.length) {
