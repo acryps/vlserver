@@ -392,7 +392,7 @@ ViewModel.mappings = {
 		};
 
 		static get items() {
-			return this.getPrefetchingProperties(ViewModel.maximumPrefetchingRecursionDepth);
+			return this.getPrefetchingProperties(ViewModel.maximumPrefetchingRecursionDepth, []);
 		}
 
 		static getPrefetchingProperties(level: number, parents: string[]) {
