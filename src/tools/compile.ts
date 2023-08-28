@@ -395,7 +395,23 @@ ViewModel.mappings = {
 			return this.getPrefetchingProperties(ViewModel.maximumPrefetchingRecursionDepth);
 		}
 
-		static getPrefetchingProperties(level: number) {
+		static getPrefetchingProperties(level: number, parents: string[]) {
+			let repeats = false;
+
+			for (let size = 1; size <= parents.length / 2; size++) {
+				if (!repeats) {
+					for (let index = 0; index < parents.length - ; index++) {
+						if (parents[parents.length - 1 - index] == parents[parents.length - 1 - index - size]) {
+							repeats = true;
+						}
+					}
+				}
+			}
+
+			if (repeats) {
+				level--;
+			}
+
 			if (!level) {
 				return;
 			}
@@ -404,7 +420,10 @@ ViewModel.mappings = {
 				${Object.keys(viewModel.properties).map(name => viewModel.properties[name].fetch ? `
 			
 				get ${name}() {
-					return ViewModel.mappings.${viewModel.properties[name].fetch.single || viewModel.properties[name].fetch.many}.getPrefetchingProperties(level - 1);
+					return ViewModel.mappings.${viewModel.properties[name].fetch.single || viewModel.properties[name].fetch.many}.getPrefetchingProperties(
+						level,
+						[...parents, ${JSON.stringify(`${name}-${viewModel.name}`)}]
+					);
 				}
 
 			`.trim() : `${name}: true`).join(",\n\t\t\t\t")}
