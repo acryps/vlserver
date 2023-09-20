@@ -455,6 +455,10 @@ ViewModel.mappings = {
 					if (viewModel.properties[name].propertyType == "Date") {
 						return `item.${name} = data.${name} === null ? null : new Date(data.${name})`;
 					}
+
+					if (viewModel.properties[name].enum) {
+						return `item.${name} = data.${name} === null ? null : data.${name}`;
+					}
 				}
 			})()});`).join("\n\t\t\t")}
 
@@ -500,6 +504,10 @@ ViewModel.mappings = {
 
 					if (viewModel.properties[name].propertyType == "Date") {
 						return `model.${name} = viewModel.${name} === null ? null : new Date(viewModel.${name})`;
+					}
+
+					if (viewModel.properties[name].enum) {
+						return `model.${name} = viewModel.${name} === null ? null : viewModel.${name}`;
 					}
 				}
 			})()});`).join("\n\t\t\t")}
