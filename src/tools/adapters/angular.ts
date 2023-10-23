@@ -41,10 +41,12 @@ export class ${viewModel.name} {
 					return `item.${name} = raw.${name} === null ? null : +raw.${name}`;
 				} else if (viewModel.properties[name].propertyType == "Date") {
 					return `item.${name} = raw.${name} ? new Date(raw.${name}) : null`;
-				} else if (viewModel.properties[name].enum) {
+				} else if (viewModel.properties[name].enum) {
 					return `item.${name} = raw.${name}`;
+				} else if (viewModel.properties[name].propertyType.endsWith('[]')) {
+					return `raw.${name} === undefined || (item.${name} = raw.${name} ? raw.${name}.map(i => ${viewModel.properties[name].propertyType.slice(0, -2)}["$build"](i)) : null)`;
 				} else {
-					return `item.${name} = raw.${name} ? ${viewModel.properties[name].propertyType}["$build"](raw.${name}) : null`;
+					return `raw.${name} === undefined || (item.${name} = raw.${name} ? ${viewModel.properties[name].propertyType}["$build"](raw.${name}) : null)`;
 				}
 			}
 		}).join("\n\t\t")}
