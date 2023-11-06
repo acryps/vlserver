@@ -41,7 +41,7 @@ export class ${viewModel.name} {
                     return `raw.${name} === undefined || (item.${name} = raw.${name} ? new Date(raw.${name}) : null)`;
                 } else if (viewModel.properties[name].enum) {
                     return `raw.${name} === undefined || (item.${name} = raw.${name})`;
-                } else if (viewModel.properties[name].propertyType.endsWith('[]')) {
+                } else if (viewModel.properties[name].propertyType?.endsWith('[]')) {
                     return `raw.${name} === undefined || (item.${name} = raw.${name} ? raw.${name}.map(i => ${viewModel.properties[name].propertyType.slice(0, -2)}["$build"](i)) : null)`;
                 } else {
                     return `raw.${name} === undefined || (item.${name} = raw.${name} ? ${viewModel.properties[name].propertyType}["$build"](raw.${name}) : null)`;
