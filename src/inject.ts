@@ -19,11 +19,15 @@ export class Inject {
 
 		const parameters = [];
 
-		for (let key of mapping.parameters) {
+		for (let index = 0; index < mapping.parameters.length; index++) {
+			const key = mapping.parameters[index];
+
 			if (key in this.globalContext) {
 				parameters.push(this.globalContext[key]);
-			} else {
+			} else if (key in Inject.mappings) {
 				parameters.push(this.construct(Inject.mappings[key].objectConstructor));
+			} else {
+				throw new Error(`Inject '${objectConstructor.name}' failed: type '${key}' used as parameter ${index + 1} of new ${objectConstructor.name}() not found in mappings.`);
 			}
 		}
 
