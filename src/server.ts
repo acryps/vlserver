@@ -84,80 +84,14 @@ export class BaseServer {
 
 				for (let paramKey in paramMappings) {
 					if (paramKey in body || paramKey in files) {
-						switch (paramMappings[paramKey].type) {
-							case "string": {
-								if (paramMappings[paramKey].isArray) {
-									params[paramKey] = [...JSON.parse(body[paramKey])].map(s => `${s}`);
-								} else {
-									const value = JSON.parse(body[paramKey]);
+						const parameterParser = this.getParameterParser(paramMappings[paramKey].type);
 
-									if (value === null) {
-										params[paramKey] = null;
-									} else {
-										params[paramKey] = `${value}`;
-									}
-								}
+						if (paramMappings[paramKey].isArray) {
+							params[paramKey] = [...JSON.parse(body[paramKey])].map(element => parameterParser(element));
+						} else {
+							const content = paramKey in files ? files[paramKey][0] : JSON.parse(body[paramKey]);
 
-								break;
-							}
-
-							case "number": {
-								if (paramMappings[paramKey].isArray) {
-									params[paramKey] = [...JSON.parse(body[paramKey])].map(s => +s);
-								} else {
-									const value = JSON.parse(body[paramKey]);
-
-									if (value === null) {
-										params[paramKey] = null;
-									} else {
-										params[paramKey] = +value;
-									}
-								}
-
-								break;
-							}
-
-							case "boolean": {
-								if (paramMappings[paramKey].isArray) {
-									params[paramKey] = [...JSON.parse(body[paramKey])].map(s => !!s);
-								} else {
-									params[paramKey] = !!JSON.parse(body[paramKey]);
-								}
-
-								break;
-							}
-
-							case "date": {
-								if (paramMappings[paramKey].isArray) {
-									params[paramKey] = [...JSON.parse(body[paramKey])].map(s => new Date(s));
-								} else {
-									const value = JSON.parse(body[paramKey]);
-
-									if (value === null) {
-										params[paramKey] = null;
-									} else {
-										params[paramKey] = new Date(value);
-									}
-								}
-
-								break;
-							}
-
-							case "buffer": {
-								params[paramKey] = files[paramKey][0].buffer;
-
-								break;
-							}
-
-							default: {
-								const ctr = paramMappings[paramKey].type;
-								
-								if (paramMappings[paramKey].isArray) {
-									params[paramKey] = [...JSON.parse(body[paramKey])].map(model => ViewModel.mappings[ctr.name].toViewModel(model));
-								} else {
-									params[paramKey] = ViewModel.mappings[ctr.name].toViewModel(JSON.parse(body[paramKey]));
-								}
-							}
+							params[paramKey] = parameterParser(content);
 						}
 					}
 				}
@@ -215,6 +149,52 @@ export class BaseServer {
 				});
 			} 
 		});
+	}
+
+	private getParameterParser(type: any): (value: any) => any {
+		switch (type) {
+			case "string": {
+				return value => {
+					if (value === null) {
+						return null;
+					} else {
+						return `${value}`;
+					}
+				}
+			}
+
+			case "number": {
+				return value => {
+					if (value === null) {
+						return null;
+					} else {
+						return +value;
+					}
+				}
+			}
+
+			case "boolean": {
+				return value => !!value;
+			}
+
+			case "date": {
+				return value => {
+					if (value === null) {
+						return null;
+					} else {
+						return new Date(value);
+					}
+				}
+			}
+
+			case "buffer": {
+				return value => value.buffer;
+			}
+
+			default: {
+				return value => ViewModel.mappings[type.name].toViewModel(value);
+			}
+		}
 	}
 
 	static async unwrap(value) {
