@@ -151,7 +151,12 @@ export class BaseServer {
 
 							default: {
 								const ctr = paramMappings[paramKey].type;
-								params[paramKey] = ViewModel.mappings[ctr.name].toViewModel(JSON.parse(body[paramKey]));
+								
+								if (paramMappings[paramKey].isArray) {
+									params[paramKey] = [...JSON.parse(body[paramKey])].map(model => ViewModel.mappings[ctr.name].toViewModel(model));
+								} else {
+									params[paramKey] = ViewModel.mappings[ctr.name].toViewModel(JSON.parse(body[paramKey]));
+								}
 							}
 						}
 					}
