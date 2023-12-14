@@ -224,6 +224,18 @@ function compile(paths: string[], program: ts.Program, typeChecker: ts.TypeCheck
 			const viewModelProperties = typeChecker.getTypeAtLocation(node.node).getProperties()
 				.filter(property => !parent.baseViewModelProperties.find(p => p.escapedName == property.escapedName));
 
+			for (const property of parent.viewModelProperties) {
+				const matchingProperty = viewModelProperties.find(child => child.escapedName == property.escapedName && node.node.members.some(member => child.escapedName == (member.name as any)?.escapedText));
+
+				function getTypeName(property: ts.Symbol) {
+					return typeChecker.typeToString(typeChecker.getTypeAtLocation((property.declarations[0] as any).type))
+				}
+
+				if (matchingProperty && getTypeName(matchingProperty) == getTypeName(property)) {
+					console.warn(`Duplicate property declaration: "${node.name}" extending from "${parent.name}" both have property "${matchingProperty.escapedName}" of same type`);
+				}
+			}
+
 			const viewModel: ViewModel = {
 				name: node.name,
 				baseViewModelProperties: parent.baseViewModelProperties,
