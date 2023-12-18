@@ -3,10 +3,10 @@ import { DbSet, Entity, QueryProxy, Queryable } from "vlquery";
 
 export class ViewModel<TModel> implements JSONResolvable {
 	static mappings: any; // global mappings injected by server routing
-	protected model: TModel; // model proxy
 	static globalFetchingContext;
-	private source?: TModel;
-	private createdFromScratch = false;
+	protected $$model: TModel; // model proxy
+	private $$source?: TModel;
+	private $$createdFromScratch = false;
 
 	// how many levels of a property referencing the same view model should be preloaded
 	// works with indirect chains too!
@@ -14,9 +14,9 @@ export class ViewModel<TModel> implements JSONResolvable {
 
 	constructor(source?: TModel) {
 		if (arguments.length) {
-			this.source = source;
+			this.$$source = source;
 		} else {
-			this.createdFromScratch = true;
+			this.$$createdFromScratch = true;
 		}
 	}
 
@@ -83,11 +83,11 @@ export class ViewModel<TModel> implements JSONResolvable {
 	}
 
 	async resolveToJSON() {
-		let source = this.source;
+		let source = this.$$source;
 
 		const mapping = ViewModel.mappings[this.constructor.name];
 		
-		if (this.createdFromScratch) {
+		if (this.$$createdFromScratch) {
 			const mapped: any = {};
 
 			for (let property in this) {
@@ -108,7 +108,7 @@ export class ViewModel<TModel> implements JSONResolvable {
 		}
 
 		const mapper = (new mapping()).map.bind({
-			model: source
+			$$model: source
 		});
 
 		const mapped = await mapper();

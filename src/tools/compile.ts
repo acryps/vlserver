@@ -5,308 +5,342 @@ import * as pathtools from "path";
 import { sha512 } from "js-sha512";
 
 let routes = [];
-const viewModels = [];
+const viewModels: ViewModel[] = [];
 const injects = {};
 const enums = {};
 
-function compile(path: string, root: string, program: ts.Program, typeChecker: ts.TypeChecker) {
-	const sourceFile = program.getSourceFile(path);
+type ViewModel = {
+	name: string,
+	baseViewModelProperties: ts.Symbol[],
+	modelProperties: ts.Symbol[],
+	viewModelProperties: ts.Symbol[],
+	modelType: string,
+	modelSource: string,
+	properties: any,
+	path: string
+}
 
-	const imports = [];
+function compile(paths: string[], program: ts.Program, typeChecker: ts.TypeChecker) {
+	let uncompiledNodes: {
+		inheritance: string,
+		node: ts.ClassDeclaration,
+		name: string,
+		path: string
+	}[] = [];
 
-	ts.transform(sourceFile, [
-		<T extends ts.Node>(context: ts.TransformationContext) => (rootNode: T) => {
-			function visit(node): ts.Node {
-				if (node.kind == ts.SyntaxKind.ImportDeclaration) {
-					for (let name of node.getText(sourceFile).split("{")[1].split("}")[0].split(",")) {
-						if (node.moduleSpecifier.text[0] == ".") {
-							imports.push({
-								file: `./${pathtools.relative(
-									pathtools.dirname(pathtools.resolve(config.root, config.services.serverOutFile)),
-									pathtools.resolve(pathtools.dirname(path), node.moduleSpecifier.text)
-								).replace(/\.ts$/, "")}`,
-								name: name.trim()
-							});
-						} else {
-							imports.push({
-								file: node.moduleSpecifier.text,
-								name: name.trim()
-							});
-						}
-					}
-				}
-
-				if (node.kind == ts.SyntaxKind.ClassDeclaration) {
-					const name = node.name.escapedText;
-		
-					imports.push({
-						file: `./${pathtools.relative(
-							pathtools.dirname(pathtools.resolve(config.root, config.services.serverOutFile)),
-							sourceFile.fileName
-						).replace(/\.ts$/, "")}`,
-						name
-					});
-
-					const controller = {
-						name,
-						imports
-					};
-		
-					// check for Service inheritage
-					if (node.heritageClauses && node.heritageClauses[0] && node.heritageClauses[0].types[0] && node.heritageClauses[0].types[0].expression.escapedText == "Service") {
-						for (let member of node.members) {
-							if (member.kind == ts.SyntaxKind.Constructor) {
-								injects[name] = [];
-
-								for (let param of member.parameters) {
-									const parameterTypeName = param.type.typeName.escapedText;
-
-									injects[name].push(parameterTypeName);
-									injects[parameterTypeName] = [];
-
-									for (let member of (typeChecker.getTypeFromTypeNode(param.type).symbol.declarations[0] as any).symbol.members.values()) {
-										const declaration = member.declarations && member.declarations[0];
-
-										if (declaration && declaration.kind == ts.SyntaxKind.Constructor) {
-											for (let parameter of declaration.parameters) {
-												injects[parameterTypeName].push(parameter.type.typeName.escapedText);
-											}
-										}
-									}
-								}
-							}
-		
-							if (member.kind == ts.SyntaxKind.MethodDeclaration && !(["onrequest", "onerror"].includes(member.name.escapedText))) {
-								let type = typeChecker.getSignatureFromDeclaration(member).getReturnType() as any;
-								let types = [type];
-
-								if (type.resolvedTypeArguments) {
-									while (type && type.resolvedTypeArguments && type.resolvedTypeArguments[0]) {
-										type = type.resolvedTypeArguments[0];
-
-										types.unshift(type);
-									}
-								}
-
-								// remove Promises from type chain
-								types = types.filter(t => t.symbol ? t.symbol.escapedName != "Promise" : true).map(t => t.symbol ? t.symbol.escapedName : t.intrinsicName);
-
-								const typeNames = [];
-
-								// resolve unknown from results
-								for (let type of types.reverse()) {
-									if (type == "UnknownFromResult") {
-										let name;
-
-										function findReturn(node): ts.Node {
-											if (ts.isReturnStatement(node)) {
-												if (node.expression) {
-													if (ts.isCallExpression(node.expression)) {
-														if ((node.expression.expression as any)?.name?.escapedText == "from") {
-															if ((node.expression.expression as any).expression) {
-																name = (node.expression.expression as any).expression.escapedText;
-															}
-														}
-													}
-												}
-											}
-
-											return ts.visitEachChild(node, findReturn, context);
-										}
-
-										ts.visitNode(member, findReturn);
-
-										if (!name) {
-											throw new Error(`Cannot find return type of '${member.name.escapedText}' in '${controller.name}'!`);
-										}
-
-										// add resolved from name to type stack
-										typeNames.push("Array", name);
-									} else {
-										typeNames.push(type);
-									}
-								}
-
-								const id = sha512([
-									controller.name,
-									...types,
-									member.name.escapedText,
-									JSON.stringify(member.parameters.map(parameter => ({
-										name: parameter.name.escapedText,
-										type: parameter.type.getText(sourceFile)
-									})))
-								].join("-")).replace(/[a-f0-9]{16}/g, m => Buffer.from(parseInt(m, 16).toString(36)).toString('base64').substr(2, 4));
-
-								routes.push({
-									id,
-									controller,
-									name: member.name.escapedText,
-									returnType: typeNames,
-									parameters: member.parameters.map(parameter => ({
-										id: sha512([
-											id,
-											parameter.name.escapedText,
-											parameter.type.getText(sourceFile)
-										].join("_".repeat(420))).replace(/[a-f0-9]{16}/g, m => Buffer.from(parseInt(m, 16).toString(36)).toString('base64').substr(2, 4)),
-										name: parameter.name.escapedText,
-										isArray: parameter.type.getText(sourceFile).includes("[]") || parameter.type.getText(sourceFile).includes("Array<"),
-										type: parameter.type.getText(sourceFile).replace("[]", "").replace("Array<", "").replace(">", "")
-									}))
+	for (const path of paths) {
+		const sourceFile = program.getSourceFile(path);
+	
+		const imports = [];
+	
+		ts.transform(sourceFile, [
+			<T extends ts.Node>(context: ts.TransformationContext) => (rootNode: T) => {
+				function visit(node): ts.Node {
+					if (node.kind == ts.SyntaxKind.ImportDeclaration) {
+						for (let name of node.getText(sourceFile).split("{")[1]?.split("}")[0].split(",") || []) {
+							if (node.moduleSpecifier.text[0] == ".") {
+								imports.push({
+									file: `./${pathtools.relative(
+										pathtools.dirname(pathtools.resolve(config.root, config.services.serverOutFile)),
+										pathtools.resolve(pathtools.dirname(path), node.moduleSpecifier.text)
+									).replace(/\.ts$/, "")}`,
+									name: name.trim()
+								});
+							} else {
+								imports.push({
+									file: node.moduleSpecifier.text,
+									name: name.trim()
 								});
 							}
 						}
 					}
-
-					if (node.heritageClauses && node.heritageClauses[0] && node.heritageClauses[0].types[0] && node.heritageClauses[0].types[0].expression.escapedText == "ViewModel") {
-						const modelType = typeChecker.getTypeAtLocation(node.heritageClauses[0].types[0].typeArguments[0]);
-						const modelProperties = typeChecker.getTypeAtLocation(node.heritageClauses[0].types[0].typeArguments[0]).getProperties();
-						const baseViewModelProperties = typeChecker.getTypeAtLocation(node.heritageClauses[0].types[0]).getProperties();
-
-						const viewModelProperties = typeChecker.getTypeAtLocation(node).getProperties()
-							.filter(property => !baseViewModelProperties.find(p => p.escapedName == property.escapedName));
-
-						const properties = {};
-
-						for (let property of modelProperties) {
-							const viewModelProperty = viewModelProperties.find(p => p.escapedName == property.escapedName);
-
-							if (viewModelProperty) {
-								const modelPropertyType = typeChecker.getTypeAtLocation(
-									(property.declarations[0] as any).type
-								);
-
-								const viewModelPropertyType = typeChecker.getTypeAtLocation(
-									(viewModelProperty.declarations[0] as any).type
-								);
-
-								const modelPropertyName = (property.declarations[0] as any) && (property.declarations[0] as any).type && (property.declarations[0] as any).type.getText();
-
-								if (modelPropertyName && modelPropertyName.startsWith("Partial<ForeignReference<")) {
-									properties[property.escapedName.toString()] = {
-										name: property.escapedName,
-										propertyType: typeChecker.typeToString(viewModelPropertyType),
-										type: convertToStoredType(typeChecker.typeToString(viewModelPropertyType)),
-										fetch: {
-											single: typeChecker.typeToString(viewModelPropertyType),
-										}
-									}
-								} else if (modelPropertyName && modelPropertyName.startsWith("PrimaryReference<")) {
-									const asViewModel = typeChecker.typeToString(
-										(viewModelPropertyType as any).resolvedTypeArguments[0]
-									);
-
-									properties[property.escapedName.toString()] = {
-										name: property.escapedName,
-										propertyType: typeChecker.typeToString(
-											(viewModelPropertyType as any).resolvedTypeArguments[0]
-										),
-										type: convertToStoredType(typeChecker.typeToString(
-											(viewModelPropertyType as any).resolvedTypeArguments[0]
-										)),
-										fetch: {
-											many: asViewModel
-										}
-									}
-								} else if (modelPropertyType.getBaseTypes()?.find(b => b.symbol.escapedName == "QueryEnum")) {
-									const values = {};
-
-									for (let [key, value] of modelPropertyType.symbol.exports as any) {
-                                        if (value.valueDeclaration) {
-                                            values[key] = value.valueDeclaration.initializer.text;
-                                        }
-                                    }
-
-									enums[modelPropertyType.symbol.escapedName.toString()] = values;
-
-									properties[property.escapedName.toString()] = {
-										name: property.escapedName,
-										propertyType: modelPropertyType.symbol.escapedName.toString(),
-										type: modelPropertyType.symbol.escapedName.toString(),
-										enum: true
-									};
-								} else {
-									const type = typeChecker.typeToString(viewModelPropertyType);
-									
-									properties[property.escapedName.toString()] = {
-										name: property.escapedName,
-										propertyType: "symbol" in viewModelPropertyType && type != "any" ? type : typeChecker.typeToString(modelPropertyType),
-										type: convertToStoredType(typeChecker.typeToString(modelPropertyType))
-									};
-								}
-							}
-						}
-
-						for (let property of viewModelProperties) {
-							if (!properties[property.escapedName.toString()]) {
-								properties[property.escapedName.toString()] = {
-									name: property.escapedName,
-									type: convertToStoredType(
-										typeChecker.typeToString(
-											typeChecker.getTypeAtLocation(
-												(property.declarations[0] as any).type
-											)
-										)
-									)
-								}
-							}
-						}
-
-						viewModels.push({
-							name,
-							modelType: typeChecker.typeToString(modelType),
-							modelSource: modelType.symbol.declarations[0].parent.getSourceFile().fileName,
-							properties,
-							path
+	
+					if (node.kind == ts.SyntaxKind.ClassDeclaration) {
+						const name = node.name.escapedText;
+			
+						imports.push({
+							file: `./${pathtools.relative(
+								pathtools.dirname(pathtools.resolve(config.root, config.services.serverOutFile)),
+								sourceFile.fileName
+							).replace(/\.ts$/, "")}`,
+							name
 						});
+	
+						const controller = {
+							name,
+							imports
+						};
+	
+						const inheritance = node.heritageClauses?.[0]?.types[0]?.expression.escapedText;
+	
+						if (inheritance == "Service") {
+							for (let member of node.members) {
+								if (member.kind == ts.SyntaxKind.Constructor) {
+									injects[name] = [];
+	
+									for (let param of member.parameters) {
+										const parameterTypeName = param.type.typeName.escapedText;
+	
+										injects[name].push(parameterTypeName);
+										injects[parameterTypeName] = [];
+	
+										for (let member of (typeChecker.getTypeFromTypeNode(param.type).symbol.declarations[0] as any).symbol.members.values()) {
+											const declaration = member.declarations && member.declarations[0];
+	
+											if (declaration && declaration.kind == ts.SyntaxKind.Constructor) {
+												for (let parameter of declaration.parameters) {
+													injects[parameterTypeName].push(parameter.type.typeName.escapedText);
+												}
+											}
+										}
+									}
+								}
+			
+								if (member.kind == ts.SyntaxKind.MethodDeclaration && !(["onrequest", "onerror"].includes(member.name.escapedText))) {
+									let type = typeChecker.getSignatureFromDeclaration(member).getReturnType() as any;
+									let types = [type];
+	
+									if (type.resolvedTypeArguments) {
+										while (type && type.resolvedTypeArguments && type.resolvedTypeArguments[0]) {
+											type = type.resolvedTypeArguments[0];
+	
+											types.unshift(type);
+										}
+									}
+	
+									// remove Promises from type chain
+									types = types.filter(t => t.symbol ? t.symbol.escapedName != "Promise" : true).map(t => t.symbol ? t.symbol.escapedName : t.intrinsicName);
+	
+									const typeNames = [];
+	
+									// resolve unknown from results
+									for (let type of types.reverse()) {
+										if (type == "UnknownFromResult") {
+											let name;
+	
+											function findReturn(node): ts.Node {
+												if (ts.isReturnStatement(node)) {
+													if (node.expression) {
+														if (ts.isCallExpression(node.expression)) {
+															if ((node.expression.expression as any)?.name?.escapedText == "from") {
+																if ((node.expression.expression as any).expression) {
+																	name = (node.expression.expression as any).expression.escapedText;
+																}
+															}
+														}
+													}
+												}
+	
+												return ts.visitEachChild(node, findReturn, context);
+											}
+	
+											ts.visitNode(member, findReturn);
+	
+											if (!name) {
+												throw new Error(`Cannot find return type of '${member.name.escapedText}' in '${controller.name}'!`);
+											}
+	
+											// add resolved from name to type stack
+											typeNames.push("Array", name);
+										} else {
+											typeNames.push(type);
+										}
+									}
+	
+									const id = sha512([
+										controller.name,
+										...types,
+										member.name.escapedText,
+										JSON.stringify(member.parameters.map(parameter => ({
+											name: parameter.name.escapedText,
+											type: parameter.type.getText(sourceFile)
+										})))
+									].join("-")).replace(/[a-f0-9]{16}/g, m => Buffer.from(parseInt(m, 16).toString(36)).toString('base64').substr(2, 4));
+	
+									routes.push({
+										id,
+										controller,
+										name: member.name.escapedText,
+										returnType: typeNames,
+										parameters: member.parameters.map(parameter => ({
+											id: sha512([
+												id,
+												parameter.name.escapedText,
+												parameter.type.getText(sourceFile)
+											].join("_".repeat(420))).replace(/[a-f0-9]{16}/g, m => Buffer.from(parseInt(m, 16).toString(36)).toString('base64').substr(2, 4)),
+											name: parameter.name.escapedText,
+											isArray: parameter.type.getText(sourceFile).includes("[]") || parameter.type.getText(sourceFile).includes("Array<"),
+											type: parameter.type.getText(sourceFile).replace("[]", "").replace("Array<", "").replace(">", "")
+										}))
+									});
+								}
+							}
+						} else if (inheritance == "ViewModel") {
+							const modelType = typeChecker.getTypeAtLocation(node.heritageClauses[0].types[0].typeArguments[0]);
+							const modelProperties = typeChecker.getTypeAtLocation(node.heritageClauses[0].types[0].typeArguments[0]).getProperties();
+							const baseViewModelProperties = typeChecker.getTypeAtLocation(node.heritageClauses[0].types[0]).getProperties();
+
+							const viewModelProperties = typeChecker.getTypeAtLocation(node).getProperties()
+								.filter(property => !baseViewModelProperties.find(p => p.escapedName == property.escapedName));
+
+							const viewModel: ViewModel = {
+								name,
+								baseViewModelProperties,
+								modelProperties,
+								modelType: typeChecker.typeToString(modelType),
+								modelSource: modelType.symbol.declarations[0].parent.getSourceFile().fileName,
+								properties: {},
+								viewModelProperties,
+								path
+							}
+
+							viewModels.push(compileViewModel(typeChecker, viewModel));
+						} else if (inheritance) {
+							uncompiledNodes.push({
+								inheritance,
+								node,
+								name, 
+								path
+							});
+						}
+					}
+			
+					return ts.visitEachChild(node, visit, context);
+				}
+			
+				return ts.visitNode(rootNode, visit);
+			}
+		]);
+	}
+
+	while (uncompiledNodes.length) {
+		const nodes = [...uncompiledNodes];
+		uncompiledNodes = [];
+
+		for (const node of nodes) {
+			const parent = viewModels.find(model => model.name == node.inheritance);
+	
+			if (parent) {
+				const viewModelProperties = typeChecker.getTypeAtLocation(node.node).getProperties()
+					.filter(property => !parent.baseViewModelProperties.find(p => p.escapedName == property.escapedName));
+	
+				for (const property of parent.viewModelProperties) {
+					const matchingProperty = viewModelProperties.find(child => child.escapedName == property.escapedName && node.node.members.some(member => child.escapedName == (member.name as any)?.escapedText));
+	
+					function getTypeName(property: ts.Symbol) {
+						return typeChecker.typeToString(typeChecker.getTypeAtLocation((property.declarations[0] as any).type))
+					}
+	
+					if (matchingProperty && getTypeName(matchingProperty) == getTypeName(property)) {
+						console.warn(`Duplicate property declaration: "${node.name}" extending from "${parent.name}" both have property "${matchingProperty.escapedName}" of same type`);
 					}
 				}
-		
-				return ts.visitEachChild(node, visit, context);
+	
+				const viewModel: ViewModel = {
+					name: node.name,
+					baseViewModelProperties: parent.baseViewModelProperties,
+					modelProperties: [...parent.modelProperties],
+					viewModelProperties,
+					modelType: parent.modelType,
+					modelSource: parent.modelSource,
+					properties: {},
+					path: node.path
+				}
+	
+				viewModels.push(compileViewModel(typeChecker, viewModel));
+			} else {
+				uncompiledNodes.push(node);
 			}
-		
-			return ts.visitNode(rootNode, visit);
 		}
-	]);
+
+		// remaining nodes aren't related to view models
+		if (nodes.length == uncompiledNodes.length) {
+			break;
+		}
+	}
 }
 
-function scan(directory: string) {
-	const compilerOptions = ts.parseJsonConfigFileContent(
-		ts.readConfigFile(
-			`${directory}/tsconfig.json`, 
-			ts.sys.readFile
-		).config,
-		ts.sys,
-		directory
-	);
+function compileViewModel(typeChecker: ts.TypeChecker, viewModel: ViewModel) {
+	const properties = {};
 
-	const serviceFiles = [];
+	for (let property of viewModel.modelProperties) {
+		const viewModelProperty = viewModel.viewModelProperties.find(p => p.escapedName == property.escapedName);
 
-	function scanDirectory(directory: string) {
-		for (let item of fs.readdirSync(directory)) {
-			const path = `${directory}/${item}`;
+		if (viewModelProperty) {
+			const modelPropertyType = typeChecker.getTypeAtLocation(
+				(property.declarations[0] as any).type
+			);
 
-			if (fs.lstatSync(path).isDirectory()) {
-				scanDirectory(path);
-			} else if (path.endsWith("service.ts")) {
-				serviceFiles.push(path);
-			} else if (path.endsWith(".ts") && fs.readFileSync(path).toString().match(/extends\s+ViewModel\</)) {
-				serviceFiles.push(path);
+			const viewModelPropertyType = typeChecker.getTypeAtLocation(
+				(viewModelProperty.declarations[0] as any).type
+			);
+
+			const modelPropertyName = (property.declarations[0] as any) && (property.declarations[0] as any).type && (property.declarations[0] as any).type.getText();
+
+			if (modelPropertyName && modelPropertyName.startsWith("Partial<ForeignReference<")) {
+				properties[property.escapedName.toString()] = {
+					name: property.escapedName,
+					propertyType: typeChecker.typeToString(viewModelPropertyType),
+					type: convertToStoredType(typeChecker.typeToString(viewModelPropertyType)),
+					fetch: {
+						single: typeChecker.typeToString(viewModelPropertyType),
+					}
+				}
+			} else if (modelPropertyName && modelPropertyName.startsWith("PrimaryReference<")) {
+				const asViewModel = typeChecker.typeToString(
+					(viewModelPropertyType as any).resolvedTypeArguments[0]
+				);
+
+				properties[property.escapedName.toString()] = {
+					name: property.escapedName,
+					propertyType: typeChecker.typeToString(
+						(viewModelPropertyType as any).resolvedTypeArguments[0]
+					),
+					type: convertToStoredType(typeChecker.typeToString(
+						(viewModelPropertyType as any).resolvedTypeArguments[0]
+					)),
+					fetch: {
+						many: asViewModel
+					}
+				}
+			} else if (modelPropertyType.getBaseTypes()?.find(b => b.symbol.escapedName == "QueryEnum")) {
+				const values = {};
+
+				for (let [key, value] of modelPropertyType.symbol.exports as any) {
+					if (value.valueDeclaration) {
+						values[key] = value.valueDeclaration.initializer.text;
+					}
+				}
+
+				enums[modelPropertyType.symbol.escapedName.toString()] = values;
+
+				properties[property.escapedName.toString()] = {
+					name: property.escapedName,
+					propertyType: modelPropertyType.symbol.escapedName.toString(),
+					type: modelPropertyType.symbol.escapedName.toString(),
+					enum: true
+				};
+			} else {
+				const type = typeChecker.typeToString(viewModelPropertyType);
+				
+				properties[property.escapedName.toString()] = {
+					name: property.escapedName,
+					propertyType: "symbol" in viewModelPropertyType && type != "any" ? type : typeChecker.typeToString(modelPropertyType),
+					type: convertToStoredType(typeChecker.typeToString(modelPropertyType))
+				};
 			}
 		}
 	}
 
-	scanDirectory(directory);
-
-	const program = ts.createProgram([
-		directory,
-		...serviceFiles
-	], compilerOptions.options);
-
-	const typeChecker = program.getTypeChecker();
-	
-	for (let path of serviceFiles) {
-		compile(path, directory, program, typeChecker);
+	for (let property of viewModel.viewModelProperties) {
+		if (!properties[property.escapedName.toString()]) {
+			throw new Error(`"${property.escapedName}" in ViewModel "${viewModel.name}" does not exist in Model "${viewModel.modelType}"`);
+		}
 	}
+
+	viewModel.properties = properties;
+
+	return viewModel;
 }
 
 export class Import {
@@ -318,9 +352,28 @@ export class Import {
 }
 
 export function compileServices() {
-	for (let dir of config.services.scan) {
-		scan(pathtools.resolve(dir));
+	const rootPath = process.cwd();
+	const configPath = pathtools.join(rootPath, 'tsconfig.json');
+	const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
+
+	if (!configFile.config) {
+		throw new Error('Could not read tsconfig.json');
 	}
+
+	const parsedCommandLine = ts.parseJsonConfigFileContent(
+		configFile.config,
+		ts.sys,
+		rootPath
+	);
+
+	const program = ts.createProgram({
+		rootNames: parsedCommandLine.fileNames,
+		options: parsedCommandLine.options
+	});
+
+	const typeChecker = program.getTypeChecker();
+	
+	compile(parsedCommandLine.fileNames, program, typeChecker);
 
 	let missingPaths = [];
 	let path = pathtools.join(config.root, config.services.serverOutFile);
@@ -375,17 +428,17 @@ ViewModel.mappings = {
 			return {
 				${Object.keys(viewModel.properties).map(name => `${name}: ${(() => {
 					if (!viewModel.properties[name].fetch) {
-						return `this.model.${name}`;
+						return `this.$$model.${name}`;
 					}
 
 					if (viewModel.properties[name].fetch.single) {
-						return `new ${viewModel.properties[name].fetch.single}(await BaseServer.unwrap(this.model.${name}))`;
+						return `new ${viewModel.properties[name].fetch.single}(await BaseServer.unwrap(this.$$model.${name}))`;
 					}
 
 					if (viewModel.properties[name].fetch.many) {
 						const asViewModel = viewModel.properties[name].fetch.many;
 
-						return `(await this.model.${name}.includeTree(ViewModel.mappings.${asViewModel}.items).toArray()).map(item => new ${asViewModel}(item))`;
+						return `(await this.$$model.${name}.includeTree(ViewModel.mappings.${asViewModel}.items).toArray()).map(item => new ${asViewModel}(item))`;
 					}
 				})()}`).join(",\n\t\t\t\t")}
 			}
