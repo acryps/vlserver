@@ -166,7 +166,6 @@ Create a `client` directory.
 	},
 	"services": {
 		"serverOutFile": "server.ts",
-		"scan": ["areas"],
 		"endpoints": [
 			{
 				"type": "native",
