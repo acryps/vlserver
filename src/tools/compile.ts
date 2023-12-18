@@ -213,51 +213,50 @@ function compile(paths: string[], program: ts.Program, typeChecker: ts.TypeCheck
 		]);
 	}
 
-	let lastUncompiledNodeLength = uncompiledNodes.length;
-
 	while (uncompiledNodes.length) {
-		const node = uncompiledNodes.shift();
+		const nodes = [...uncompiledNodes];
+		uncompiledNodes = [];
 
-		const parent = viewModels.find(model => model.name == node.inheritance);
-
-		if (parent) {
-			const viewModelProperties = typeChecker.getTypeAtLocation(node.node).getProperties()
-				.filter(property => !parent.baseViewModelProperties.find(p => p.escapedName == property.escapedName));
-
-			for (const property of parent.viewModelProperties) {
-				const matchingProperty = viewModelProperties.find(child => child.escapedName == property.escapedName && node.node.members.some(member => child.escapedName == (member.name as any)?.escapedText));
-
-				function getTypeName(property: ts.Symbol) {
-					return typeChecker.typeToString(typeChecker.getTypeAtLocation((property.declarations[0] as any).type))
+		for (const node of nodes) {
+			const parent = viewModels.find(model => model.name == node.inheritance);
+	
+			if (parent) {
+				const viewModelProperties = typeChecker.getTypeAtLocation(node.node).getProperties()
+					.filter(property => !parent.baseViewModelProperties.find(p => p.escapedName == property.escapedName));
+	
+				for (const property of parent.viewModelProperties) {
+					const matchingProperty = viewModelProperties.find(child => child.escapedName == property.escapedName && node.node.members.some(member => child.escapedName == (member.name as any)?.escapedText));
+	
+					function getTypeName(property: ts.Symbol) {
+						return typeChecker.typeToString(typeChecker.getTypeAtLocation((property.declarations[0] as any).type))
+					}
+	
+					if (matchingProperty && getTypeName(matchingProperty) == getTypeName(property)) {
+						console.warn(`Duplicate property declaration: "${node.name}" extending from "${parent.name}" both have property "${matchingProperty.escapedName}" of same type`);
+					}
 				}
-
-				if (matchingProperty && getTypeName(matchingProperty) == getTypeName(property)) {
-					console.warn(`Duplicate property declaration: "${node.name}" extending from "${parent.name}" both have property "${matchingProperty.escapedName}" of same type`);
+	
+				const viewModel: ViewModel = {
+					name: node.name,
+					baseViewModelProperties: parent.baseViewModelProperties,
+					modelProperties: [...parent.modelProperties],
+					viewModelProperties,
+					modelType: parent.modelType,
+					modelSource: parent.modelSource,
+					properties: {},
+					path: node.path
 				}
+	
+				viewModels.push(compileViewModel(typeChecker, viewModel));
+			} else {
+				uncompiledNodes.push(node);
 			}
-
-			const viewModel: ViewModel = {
-				name: node.name,
-				baseViewModelProperties: parent.baseViewModelProperties,
-				modelProperties: [...parent.modelProperties],
-				viewModelProperties,
-				modelType: parent.modelType,
-				modelSource: parent.modelSource,
-				properties: {},
-				path: node.path
-			}
-
-			viewModels.push(compileViewModel(typeChecker, viewModel));
-		} else {
-			uncompiledNodes.push(node);
 		}
 
-		// remaining classes are not children of view models
-		if (lastUncompiledNodeLength == uncompiledNodes.length) {
+		// remaining nodes aren't related to view models
+		if (nodes.length == uncompiledNodes.length) {
 			break;
 		}
-
-		lastUncompiledNodeLength = uncompiledNodes.length;
 	}
 }
 
