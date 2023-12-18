@@ -37,7 +37,7 @@ function compile(paths: string[], program: ts.Program, typeChecker: ts.TypeCheck
 			<T extends ts.Node>(context: ts.TransformationContext) => (rootNode: T) => {
 				function visit(node): ts.Node {
 					if (node.kind == ts.SyntaxKind.ImportDeclaration) {
-						for (let name of node.getText(sourceFile).split("{")[1].split("}")[0].split(",")) {
+						for (let name of node.getText(sourceFile).split("{")[1]?.split("}")[0].split(",") || []) {
 							if (node.moduleSpecifier.text[0] == ".") {
 								imports.push({
 									file: `./${pathtools.relative(
@@ -362,9 +362,7 @@ function scan(directory: string) {
 
 			if (fs.lstatSync(path).isDirectory()) {
 				scanDirectory(path);
-			} else if (path.endsWith("service.ts")) {
-				serviceFiles.push(path);
-			} else if (path.endsWith(".ts") && fs.readFileSync(path).toString().match(/extends\s+ViewModel\</)) {
+			} else if (path.endsWith(".ts")) {
 				serviceFiles.push(path);
 			}
 		}
