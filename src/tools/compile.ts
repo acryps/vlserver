@@ -343,42 +343,6 @@ function compileViewModel(typeChecker: ts.TypeChecker, viewModel: ViewModel) {
 	return viewModel;
 }
 
-function scan(directory: string) {
-	const compilerOptions = ts.parseJsonConfigFileContent(
-		ts.readConfigFile(
-			`${directory}/tsconfig.json`, 
-			ts.sys.readFile
-		).config,
-		ts.sys,
-		directory
-	);
-
-	const serviceFiles = [];
-
-	function scanDirectory(directory: string) {
-		for (let item of fs.readdirSync(directory)) {
-			const path = `${directory}/${item}`;
-
-			if (fs.lstatSync(path).isDirectory()) {
-				scanDirectory(path);
-			} else if (path.endsWith(".ts")) {
-				serviceFiles.push(path);
-			}
-		}
-	}
-
-	scanDirectory(directory);
-
-	const program = ts.createProgram([
-		directory,
-		...serviceFiles
-	], compilerOptions.options);
-
-	const typeChecker = program.getTypeChecker();
-	
-	compile(serviceFiles, program, typeChecker);
-}
-
 export class Import {
 	constructor(public item: string, public source: string) {}
 
@@ -388,9 +352,28 @@ export class Import {
 }
 
 export function compileServices() {
-	for (let dir of config.services.scan) {
-		scan(pathtools.resolve(dir));
+	const rootPath = process.cwd();
+	const configPath = pathtools.join(rootPath, 'tsconfig.json');
+	const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
+
+	if (!configFile.config) {
+		throw new Error('Could not read tsconfig.json');
 	}
+
+	const parsedCommandLine = ts.parseJsonConfigFileContent(
+		configFile.config,
+		ts.sys,
+		rootPath
+	);
+
+	const program = ts.createProgram({
+		rootNames: parsedCommandLine.fileNames,
+		options: parsedCommandLine.options
+	});
+
+	const typeChecker = program.getTypeChecker();
+	
+	compile(parsedCommandLine.fileNames, program, typeChecker);
 
 	let missingPaths = [];
 	let path = pathtools.join(config.root, config.services.serverOutFile);
