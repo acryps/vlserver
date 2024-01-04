@@ -144,7 +144,7 @@ export class BaseServer {
 				}
 
 				res.json({
-					error: e + "",
+					error: e instanceof Error ? e.message : e + "",
 					stack: e.stack
 				});
 			} 
