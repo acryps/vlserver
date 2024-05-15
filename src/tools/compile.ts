@@ -423,7 +423,7 @@ export class ManagedServer extends BaseServer {
 }
 
 ViewModel.mappings = {
-	${viewModels.map(viewModel => `${viewModel.name}: class Composed${viewModel.name} extends ${viewModel.name} {
+	${viewModels.map(viewModel => `[${viewModel.name}.name]: class Composed${viewModel.name} extends ${viewModel.name} {
 		async map() {
 			return {
 				${Object.keys(viewModel.properties).map(name => `${name}: ${(() => {
