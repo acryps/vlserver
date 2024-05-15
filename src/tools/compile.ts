@@ -438,7 +438,7 @@ ViewModel.mappings = {
 					if (viewModel.properties[name].fetch.many) {
 						const asViewModel = viewModel.properties[name].fetch.many;
 
-						return `(await this.$$model.${name}.includeTree(ViewModel.mappings.${asViewModel}.items).toArray()).map(item => new ${asViewModel}(item))`;
+						return `(await this.$$model.${name}.includeTree(ViewModel.mappings[${asViewModel}.name].items).toArray()).map(item => new ${asViewModel}(item))`;
 					}
 				})()}`).join(",\n\t\t\t\t")}
 			}
@@ -473,7 +473,7 @@ ViewModel.mappings = {
 				${Object.keys(viewModel.properties).map(name => viewModel.properties[name].fetch ? `
 			
 				get ${name}() {
-					return ViewModel.mappings.${viewModel.properties[name].fetch.single || viewModel.properties[name].fetch.many}.getPrefetchingProperties(
+					return ViewModel.mappings[${viewModel.properties[name].fetch.single || viewModel.properties[name].fetch.many}.name].getPrefetchingProperties(
 						level,
 						[...parents, ${JSON.stringify(`${name}-${viewModel.name}`)}]
 					);
@@ -488,9 +488,9 @@ ViewModel.mappings = {
 			${Object.keys(viewModel.properties).map(name => `${JSON.stringify(name)} in data && (${(() => {
 				if (viewModel.properties[name].fetch) {
 					if (viewModel.properties[name].fetch.single) {
-						return `item.${name} = data.${name} && ViewModel.mappings.${viewModel.properties[name].fetch.single}.toViewModel(data.${name})`;
+						return `item.${name} = data.${name} && ViewModel.mappings[${viewModel.properties[name].fetch.single}.name].toViewModel(data.${name})`;
 					} else {
-						return `item.${name} = data.${name} && [...data.${name}].map(i => ViewModel.mappings.${viewModel.properties[name].fetch.many}.toViewModel(i))`;
+						return `item.${name} = data.${name} && [...data.${name}].map(i => ViewModel.mappings[${viewModel.properties[name].fetch.many}.name].toViewModel(i))`;
 					}
 				} else {
 					if (viewModel.properties[name].propertyType == "boolean") {
