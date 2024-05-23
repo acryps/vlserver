@@ -17,6 +17,20 @@ export class Service {
 	static getHeaders(route: string, data: any) {
 		return Service.headers;
 	}
+	
+	static stringify(object) {
+		return JSON.stringify(object, (key, value) => {
+			if (value instanceof Date) {
+				return value.toISOString();
+			}
+			
+			if (typeof value === 'object' && key !== '') {
+				return {};
+			}
+			
+			return value;
+		});
+	}
 }
 
 ${Object.keys(enums).map(name => `export class ${name} {
@@ -80,7 +94,7 @@ export class ${controller.name} {
     }> {
 		const $data = new FormData();
 		${route.parameters.map(
-			parameter => `${parameter.name} !== undefined && $data.append(${JSON.stringify(parameter.id)}, ${parameter.type == "Buffer" ? parameter.name : `JSON.stringify(${parameter.name})`})`
+			parameter => `${parameter.name} !== undefined && $data.append(${JSON.stringify(parameter.id)}, ${parameter.type == "Buffer" ? parameter.name : `Service.stringify(${parameter.name})`})`
 		).join("\n\t\t")}
 
 		return await fetch(\`\${Service.baseUrl}${route.id}\`, {

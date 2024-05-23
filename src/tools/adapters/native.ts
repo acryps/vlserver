@@ -60,6 +60,20 @@ export class Service {
 	static toURL(request) {
 		return \`\${this.baseUrl}\${request}\`;
 	}
+	
+	static stringify(object) {
+		return JSON.stringify(object, (key, value) => {
+			if (value instanceof Date) {
+				return value.toISOString();
+			}
+			
+			if (typeof value === 'object' && key !== '') {
+				return undefined;
+			}
+			
+			return value;
+		});
+	}
 }
 
 ${controllers.map(controller => `
@@ -74,7 +88,7 @@ export class ${controller.name} {
 		">".repeat(route.returnType.length - 1)
 	}> {
 		const $data = new FormData();
-		${route.parameters.map(parameter => `$data.append(${JSON.stringify(parameter.id)}, ${parameter.type == "Buffer" ? parameter.name : `JSON.stringify(${parameter.name})`})`).join("\n\t\t")}
+		${route.parameters.map(parameter => `$data.append(${JSON.stringify(parameter.id)}, ${parameter.type == "Buffer" ? parameter.name : `Service.stringify(${parameter.name})`})`).join("\n\t\t")}
 
 		return await fetch(Service.toURL(${JSON.stringify(route.id)}), {
 			method: "post",
