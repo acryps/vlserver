@@ -25,6 +25,12 @@ export class Service {
 			}
 			
 			if (typeof value === 'object' && key !== '') {
+				if ('id' in value) {
+					return {
+						id: value.id
+					};
+				}
+				
 				return {};
 			}
 			
