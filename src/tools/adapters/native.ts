@@ -67,6 +67,10 @@ export class Service {
 				return value.toISOString();
 			}
 			
+			if (value === null) {
+				return null;
+			}
+			
 			if (typeof value === 'object' && key !== '') {
 				if (value && 'id' in value) {
 					return {
