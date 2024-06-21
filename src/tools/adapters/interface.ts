@@ -14,7 +14,7 @@ export interface ${viewModel.name} {
     ${Object.keys(viewModel.properties).map(name => {
         const property = viewModel.properties[name];
 
-        return `${name}: ${property.enum ? "keyof typeof " : ""}${property.propertyType}${(property.fetch && property.fetch.many) ? "[]" : ""};`;
+        return `${name}: ${property.propertyType}${(property.fetch && property.fetch.many) ? "[]" : ""};`;
     }).join("\n\t")}
 }
 `.trim()).join("\n\n")}
