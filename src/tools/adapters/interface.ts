@@ -5,8 +5,8 @@ export class InterfaceServiceAdapter extends ServiceAdapter {
     generate(routes, viewModels, config, enums) {
         fs.writeFileSync(this.outFile, `
 
-${Object.keys(enums).map(name => `export class ${name} {
-    ${Object.keys(enums[name]).map(prop => `static readonly ${prop} = ${JSON.stringify(enums[name][prop])};`).join("\n\t")}
+${Object.keys(enums).map(name => `export enum ${name} {
+	${Object.keys(enums[name]).map(prop => `${prop} = ${JSON.stringify(enums[name][prop])}`).join(",\n\t")}
 }`).join("\n\n")}
 
 ${viewModels.map(viewModel => `
