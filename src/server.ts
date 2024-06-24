@@ -84,14 +84,18 @@ export class BaseServer {
 
 				for (let paramKey in paramMappings) {
 					if (paramKey in body || paramKey in files) {
-						const parameterParser = this.getParameterParser(paramMappings[paramKey].type);
-
-						if (paramMappings[paramKey].isArray) {
-							params[paramKey] = [...JSON.parse(body[paramKey])].map(element => parameterParser(element));
+						if (paramMappings[paramKey].isOptional && (body[paramKey] ?? files[paramKey]) == 'null') {
+							params[paramKey] = null;
 						} else {
-							const content = paramKey in files ? files[paramKey][0] : JSON.parse(body[paramKey]);
+							const parameterParser = this.getParameterParser(paramMappings[paramKey].type);
 
-							params[paramKey] = parameterParser(content);
+							if (paramMappings[paramKey].isArray) {
+								params[paramKey] = [...JSON.parse(body[paramKey])].map(element => parameterParser(element));
+							} else {
+								const content = paramKey in files ? files[paramKey][0] : JSON.parse(body[paramKey]);
+
+								params[paramKey] = parameterParser(content);
+							}
 						}
 					}
 				}

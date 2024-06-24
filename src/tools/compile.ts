@@ -169,6 +169,7 @@ function compile(paths: string[], program: ts.Program, typeChecker: ts.TypeCheck
 												parameter.type.getText(sourceFile)
 											].join("_".repeat(420))).replace(/[a-f0-9]{16}/g, m => Buffer.from(parseInt(m, 16).toString(36)).toString('base64').substr(2, 4)),
 											name: parameter.name.escapedText,
+											isOptional: !!parameter.questionToken || !!parameter.initializer,
 											isArray: parameter.type.getText(sourceFile).includes("[]") || parameter.type.getText(sourceFile).includes("Array<"),
 											type: parameter.type.getText(sourceFile).replace("[]", "").replace("Array<", "").replace(">", "")
 										}))
@@ -409,10 +410,7 @@ export class ManagedServer extends BaseServer {
 		${routes.map(route => `this.expose(
 			${JSON.stringify(route.id)},
 			{${route.parameters.length ? `
-				${route.parameters.map(parameter => `${JSON.stringify(parameter.id)}: {
-					isArray: ${parameter.isArray},
-					type: ${convertToStoredType(parameter.type)}
-				}`)}
+			${route.parameters.map(parameter => `${JSON.stringify(parameter.id)}: { type: ${convertToStoredType(parameter.type)}, isArray: ${parameter.isArray}, isOptional: ${parameter.isOptional} }`).join(',\n\t\t\t\t')}
 			` : ""}},
 			inject => inject.construct(${route.controller.name}),
 			(controller, params) => controller.${route.name}(
