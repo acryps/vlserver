@@ -1,5 +1,5 @@
 import { JSONResolvable } from "./resolve";
-import { DbSet, Entity, QueryProxy, Queryable } from "vlquery";
+import { DbSet, Entity, QueryProxy, Queryable, PrimaryReference, ForeignReference } from "vlquery";
 
 export class ViewModel<TModel> implements JSONResolvable {
 	static mappings: any; // global mappings injected by server routing
@@ -106,29 +106,54 @@ export class ViewModel<TModel> implements JSONResolvable {
 		if (!source) {
 			return null;
 		}
-
-		const mapper = (new mapping()).map.bind({
-			$$model: source
-		});
-
-		const mapped = await mapper();
-
-		// this resolves all the ViewModels within this ViewModel
-		// this not not recursive for performance and maintanance reasons
-		// a ViewModel should NOT contain an object which cannot be resolved to JSON using "resolveToJSON"
-		for (let property in mapped) {
-			if (typeof mapped[property] == "object" && mapped[property] && "resolveToJSON" in mapped[property]) {
-				mapped[property] = await mapped[property].resolveToJSON();
-			} else if (Array.isArray(mapped[property])) {
-				for (let i = 0; i < mapped[property].length; i++) {
-					if (mapped[property][i] && typeof mapped[property][i] == "object" && "resolveToJSON" in mapped[property][i]) {
-						mapped[property][i] = await mapped[property][i].resolveToJSON();
+		
+		const tree = mapping.items;
+		
+		// use backload to fill all missing items required for the view model in entity at once
+		if (source instanceof Entity) {
+			await source.backload(tree);
+			
+			const resolve = (object, tree) => {
+				const resolved = {};
+				
+				for (let key in tree) {
+					if (object[key] instanceof PrimaryReference) {
+						resolved[key] = object[key]['$stored']?.map(item => resolve(item, tree[key])) ?? [];
+					} else if (object[key] instanceof ForeignReference) {
+						if (object[key]['$stored']) {
+							resolved[key] = resolve(object[key]['$stored'], tree[key]);
+						} else {
+							resolved[key] = null;
+						}
+					} else {
+						resolved[key] = object[key];
 					}
 				}
-			}
+				
+				return resolved;
+			};
+	
+			return resolve(source, tree);
 		}
-
-		return mapped;
+		
+		// convert objects to JSON
+		const resolve = async (object, tree) => {
+			const resolved = {};
+			
+			for (let key in tree) {
+				const item = object[key];
+				
+				if (typeof item == 'object' && item && 'resolveToJSON' in item) {
+					resolved[key] = await item.resolveToJSON();
+				} else {
+					resolved[key] = item;
+				}
+			}
+			
+			return resolved;
+		};
+		
+		return await resolve(source, tree);
 	}
 }
 
