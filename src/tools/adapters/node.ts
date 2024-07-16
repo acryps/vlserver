@@ -19,6 +19,10 @@ export class Service {
 	}
 	
 	static stringify(object) {
+		if (Array.isArray(object)) {
+			return '[' + object.map(item => this.stringify(item)).join(',') + ']';
+		}
+	
 		return JSON.stringify(object, (key, value) => {
 			if (value instanceof Date) {
 				return value.toISOString();
