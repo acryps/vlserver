@@ -1,4 +1,4 @@
-import { JSONResolvable } from "./resolve";
+import { JSONResolvable, ResponseModel } from "./resolve";
 import { DbSet, Entity, QueryProxy, Queryable, PrimaryReference, ForeignReference } from "vlquery";
 
 export class ViewModel<TModel> implements JSONResolvable {
@@ -86,7 +86,7 @@ export class ViewModel<TModel> implements JSONResolvable {
 		let source = this.$$source;
 
 		const mapping = ViewModel.mappings[this.constructor.name];
-		
+
 		if (this.$$createdFromScratch) {
 			const mapped: any = {};
 
@@ -106,16 +106,42 @@ export class ViewModel<TModel> implements JSONResolvable {
 		if (!source) {
 			return null;
 		}
-		
+
 		const tree = mapping.items;
-		
+
+		if (source instanceof ResponseModel) {
+			console.log('RESPONSEMODEL', source, tree, this.$$source);
+
+			const resolve = async (object, tree) => {
+				const resolved = {};
+
+				for (let key in tree) {
+					const item = object[key];
+
+					console.log(tree[key])
+
+					if (typeof item == 'object' && item && 'resolveToJSON' in item) {
+						resolved[key] = await item.resolveToJSON();
+					} else if (typeof item == 'object' && item && Array.isArray(item)) {
+						resolved[key] = await Promise.all(item.map(item => item.resolveToJSON()));
+					} else {
+						resolved[key] = item;
+					}
+				}
+
+				return resolved;
+			};
+
+			return resolve(source, tree);
+		}
+
 		// use backload to fill all missing items required for the view model in entity at once
 		if (source instanceof Entity) {
 			await source.backload(tree);
-			
+
 			const resolve = (object, tree) => {
 				const resolved = {};
-				
+
 				for (let key in tree) {
 					if (object[key] instanceof PrimaryReference) {
 						resolved[key] = object[key]['$stored']?.map(item => resolve(item, tree[key])) ?? [];
@@ -129,20 +155,20 @@ export class ViewModel<TModel> implements JSONResolvable {
 						resolved[key] = object[key];
 					}
 				}
-				
+
 				return resolved;
 			};
-	
+
 			return resolve(source, tree);
 		}
-		
+
 		// convert objects to JSON
 		const resolve = async (object, tree) => {
 			const resolved = {};
-			
+
 			for (let key in tree) {
 				const item = object[key];
-				
+
 				if (typeof item == 'object' && item && 'resolveToJSON' in item) {
 					resolved[key] = await item.resolveToJSON();
 				} else if (typeof item == 'object' && item && Array.isArray(item)) {
@@ -151,10 +177,10 @@ export class ViewModel<TModel> implements JSONResolvable {
 					resolved[key] = item;
 				}
 			}
-			
+
 			return resolved;
 		};
-		
+
 		return await resolve(source, tree);
 	}
 }
