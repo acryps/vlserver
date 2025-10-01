@@ -468,16 +468,26 @@ ViewModel.mappings = {
 			}
 
 			return {
-				${Object.keys(viewModel.properties).map(name => viewModel.properties[name].fetch ? `
+				${Object.keys(viewModel.properties).map(name => {
+					const property = viewModel.properties[name];
+
+					if (['boolean', 'string', 'number', 'Date'].includes(property.propertyType)) {
+						return `${name}: true`;
+					} else if (property.enum) {
+						return `${name}: true`;
+					} else {
+						return `
 
 				get ${name}() {
-					return ViewModel.mappings[${viewModel.properties[name].fetch.single || viewModel.properties[name].fetch.many}.name].getPrefetchingProperties(
+					return ViewModel.mappings[${property.fetch?.single ?? property.fetch?.many ?? property.propertyType}.name].getPrefetchingProperties(
 						level,
 						[...parents, ${JSON.stringify(`${name}-${viewModel.name}`)}]
 					);
 				}
 
-			`.trim() : `${name}: true`).join(",\n\t\t\t\t")}
+						`.trim();
+					}
+				}).join(",\n\t\t\t\t")}
 			};
 		};
 
@@ -516,8 +526,6 @@ ViewModel.mappings = {
 					}
 				}
 			})()});`).join("\n\t\t\t")}
-
-			console.log(item)
 
 			return item;
 		}

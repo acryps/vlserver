@@ -83,7 +83,7 @@ export class ViewModel<TModel> implements JSONResolvable {
 	}
 
 	async resolveToJSON() {
-		let source = this.$$source;
+		let source = this.$$source ?? this;
 
 		const mapping = ViewModel.mappings[this.constructor.name];
 
@@ -110,20 +110,25 @@ export class ViewModel<TModel> implements JSONResolvable {
 		const tree = mapping.items;
 
 		if (source instanceof ResponseModel) {
-			console.log('RESPONSEMODEL', source, tree, this.$$source);
+			const resolved = await mapping.toViewModel(source);
 
-			const resolve = async (object, tree) => {
+			const resolve = async (object, leaf) => {
+				// resolve resolveables, do not expand tree inside
+				if ('resolveToJSON' in object && leaf != tree) {
+					return await object.resolveToJSON();
+				}
+
 				const resolved = {};
 
-				for (let key in tree) {
+				for (let key in leaf) {
 					const item = object[key];
 
-					console.log(tree[key])
-
-					if (typeof item == 'object' && item && 'resolveToJSON' in item) {
-						resolved[key] = await item.resolveToJSON();
-					} else if (typeof item == 'object' && item && Array.isArray(item)) {
-						resolved[key] = await Promise.all(item.map(item => item.resolveToJSON()));
+					if (typeof item == 'object' && item) {
+						if (Array.isArray(item)) {
+							resolved[key] = await Promise.all(item.map(child => resolve(child, leaf[key])));
+						} else {
+							resolved[key] = await resolve(item, leaf[key]);
+						}
 					} else {
 						resolved[key] = item;
 					}
@@ -132,7 +137,7 @@ export class ViewModel<TModel> implements JSONResolvable {
 				return resolved;
 			};
 
-			return resolve(source, tree);
+			return resolve(resolved, tree);
 		}
 
 		// use backload to fill all missing items required for the view model in entity at once
