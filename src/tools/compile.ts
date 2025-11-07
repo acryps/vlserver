@@ -518,7 +518,7 @@ ViewModel.mappings = {
 					}
 
 					if (viewModel.properties[name].propertyType) {
-						return `item.${name} = data.${name} && ViewModel.mappings[${viewModel.properties[name].propertyType}.name].toViewModel(data.${name})`;
+						return `item.${name} = data.${name} && (data.${name} instanceof ViewModel ? data.${name} : ViewModel.mappings[${viewModel.properties[name].propertyType}.name].toViewModel(data.${name}))`;
 					}
 
 					if (viewModel.properties[name].enum) {
