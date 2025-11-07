@@ -126,6 +126,8 @@ export class ViewModel<TModel> implements JSONResolvable {
 					if (typeof item == 'object' && item) {
 						if (Array.isArray(item)) {
 							resolved[key] = await Promise.all(item.map(child => resolve(child, leaf[key])));
+						} else if (item instanceof Date) {
+							resolved[key] = item.toISOString();
 						} else {
 							resolved[key] = await resolve(item, leaf[key]);
 						}
