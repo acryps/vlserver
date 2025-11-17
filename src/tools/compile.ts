@@ -517,12 +517,12 @@ ViewModel.mappings = {
 						return `item.${name} = data.${name} === null ? null : new Date(data.${name})`;
 					}
 
-					if (viewModel.properties[name].propertyType) {
-						return `item.${name} = data.${name} && (data.${name} instanceof ViewModel ? data.${name} : ViewModel.mappings[${viewModel.properties[name].propertyType}.name].toViewModel(data.${name}))`;
-					}
-
 					if (viewModel.properties[name].enum) {
 						return `item.${name} = data.${name} === null ? null : data.${name}`;
+					}
+
+					if (viewModel.properties[name].propertyType) {
+						return `item.${name} = data.${name} && (data.${name} instanceof ViewModel ? data.${name} : ViewModel.mappings[${viewModel.properties[name].propertyType}.name].toViewModel(data.${name}))`;
 					}
 				}
 			})()});`).join("\n\t\t\t")}
