@@ -1,5 +1,5 @@
 import * as express from "express";
-import { RunContext } from "vlquery";
+import { QueryEnum, RunContext } from "vlquery";
 import { Inject, ViewModel, ServiceRequest } from ".";
 import { ServerModule } from "./module";
 import * as multer from "multer";
@@ -69,7 +69,7 @@ export class BaseServer {
 			const context = this.createRunContext(req, res);
 
 			// create injector with DbContext global
-			const injector = this.createInjector(context, req, res); 
+			const injector = this.createInjector(context, req, res);
 
 			// will be constructed
 			// scoped here to call onerror in case request fails
@@ -151,11 +151,21 @@ export class BaseServer {
 					error: e instanceof Error ? e.message : e + "",
 					stack: e.stack
 				});
-			} 
+			}
 		});
 	}
 
 	private getParameterParser(type: any): (value: any) => any {
+		if (typeof type == 'function' && QueryEnum.isPrototypeOf(type)) {
+			return value => {
+				if (value === null) {
+					return null;
+				}
+
+				return `${value}`;
+			}
+		}
+
 		switch (type) {
 			case "string": {
 				return value => {
